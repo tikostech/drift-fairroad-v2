@@ -1,0 +1,28 @@
+\begin{table*}[!t]
+\centering
+\caption{Offline detection. Spoofed models: capture runs (traced, not gated), scored against the final case base. Valid models: every case-base run scored against a base built without it (leave-one-run-out). Rates are per-run mean $\pm$ s.d.; pooled counts with Wilson 95\% intervals; AUROC with bootstrap 95\% interval.}
+\label{tab:detection}
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}llcccc c@{}}
+\toprule
+\textbf{Attack} & \textbf{Model} & & \textbf{Rate} & \textbf{Flagged} & \textbf{95\% CI} & \textbf{AUROC [95\% CI]} \\
+\midrule
+None (clean) & Client update & FPR & $0.01 \pm 0.02$ & 2/360 & [0.00, 0.02] & -- \\
+ & Checkpoint & FPR & $0.00 \pm 0.00$ & 0/140 & [0.00, 0.03] & -- \\
+\midrule
+Update scaling ($\times$10) & Client update & TPR & $0.97 \pm 0.06$ & 29/30 & [0.83, 0.99] & 1.00 [0.99, 1.00] \\
+ & Checkpoint & TPR & $0.87 \pm 0.06$ & 26/30 & [0.70, 0.95] & 0.99 [0.98, 1.00] \\
+Gaussian noise ($\sigma{=}2.0$) & Client update & TPR & $0.90 \pm 0.00$ & 27/30 & [0.74, 0.97] & 1.00 [0.99, 1.00] \\
+ & Checkpoint & TPR & $0.63 \pm 0.06$ & 19/30 & [0.46, 0.78] & 0.93 [0.87, 0.98] \\
+Sign flip & Client update & TPR & $0.77 \pm 0.06$ & 23/30 & [0.59, 0.88] & 0.97 [0.95, 0.99] \\
+ & Checkpoint & TPR & $0.63 \pm 0.06$ & 19/30 & [0.46, 0.78] & 0.88 [0.79, 0.96] \\
+Gaussian noise ($\sigma{=}0.5$) & Client update & TPR & $0.00 \pm 0.00$ & 0/30 & [0.00, 0.11] & 0.68 [0.57, 0.78] \\
+ & Checkpoint & TPR & $0.00 \pm 0.00$ & 0/30 & [0.00, 0.11] & 0.55 [0.43, 0.66] \\
+Inverted training & Client update & TPR & $0.00 \pm 0.00$ & 0/30 & [0.00, 0.11] & 0.52 [0.40, 0.65] \\
+ & Checkpoint & TPR & $0.03 \pm 0.06$ & 1/30 & [0.01, 0.17] & 0.54 [0.40, 0.67] \\
+\bottomrule
+\end{tabular}
+\\[2pt]
+\parbox{\textwidth}{\scriptsize A checkpoint is spoofed if it averaged a malicious update. The clean row's s.d.\ is over the 14 held-out runs.}
+\end{table*}

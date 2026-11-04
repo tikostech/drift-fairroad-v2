@@ -1,0 +1,25 @@
+\begin{table}[!t]
+\centering
+\caption{Experimental setup.}
+\label{tab:setup}
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}ll@{}}
+\toprule
+\textbf{Item} & \textbf{Setting} \\
+\midrule
+Data & 502 clean/adversarial image pairs, $224\times224$ RGB, 3 clients ($\approx$167 each) \\
+Model & Convolutional autoencoder, 757{,}011 parameters (5 conv, 2 FC, 5 deconv) \\
+FL & FedAvg, 3 clients, 10 rounds, 1 local epoch, batch 32, Adam $\eta{=}0.001$ \\
+Probe set & 32 fixed adversarial images, evenly spaced over the dataset \\
+Trace & 98 SL-minimised features per image (7 statistics; $\phi$, spread, peak, depth, drift, conc) \\
+Case base & 500 valid models from 14 runs (8 clean{,} 6 with one client absent){,} 16{,}000 cases \\
+Comparison & $k{=}5$ nearest valid cases per probe image, rounds $r\pm1$ of training progress \\
+Threshold & held-out scores normalised by round median; 0.99 quantile $\times 1.1$, chosen for 0.5\% leave-one-run-out FPR \\
+Gate policy & $\le$1 update rejected per round (most anomalous first); checkpoints traced, not gated \\
+Attacker & 1 of 3 clients (\texttt{client\_3}) in every round \\
+Replicates & 3 independent runs per condition (fresh initialisation and shuffling) \\
+Compute & GPU (NVIDIA GeForce RTX 4070 Laptop GPU), PyTorch 2.14.1+cu130; cuDNN TF32 off while tracing \\
+\bottomrule
+\end{tabular}
+\end{table}

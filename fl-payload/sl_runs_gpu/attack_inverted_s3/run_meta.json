@@ -1,0 +1,13 @@
+{
+  "num_rounds": 10,
+  "num_clients": 3,
+  "malicious_client": "client_3",
+  "absent_clients": [],
+  "attack": "inverted",
+  "attack_scale": null,
+  "sl_case_base": null,
+  "sl_gate_mode": null,
+  "sl_gate_scope": null,
+  "sl_policy": null,
+  "started": "2026-10-06T18:51:51"
+}

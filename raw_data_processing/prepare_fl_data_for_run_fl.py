@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""
+r"""
 Script to prepare GPS, IMU, and labeled packet data for Federated Learning System (run_fl_system.py).
 
 This version:
@@ -30,6 +30,35 @@ import argparse
 from typing import Tuple, List, Dict
 
 
+# Column names of ArduPilot GPS/IMU CSV exports, matching the headers in data/waypoint_injection.
+GPS_COLUMNS = ['Unnamed: 0', 'Timestamp', 'Unnamed: 2', 'TimeUS', 'GPS_ID', 'Status', 'GMS', 'GWk',
+               'Nstats', 'HDop', 'Lat', 'Lng', 'Alt', 'Spd', 'GCrs', 'VZ', 'Yaw', 'U']
+IMU_COLUMNS = ['Unnamed: 0', 'Timestamp', 'Unnamed: 2', 'TimeUS', 'I', 'GyrX', 'GyrY', 'GyrZ',
+               'AccX', 'AccY', 'AccZ', 'EG', 'EA', 'T', 'GH', 'AH', 'GHz', 'AHz']
+
+
+def read_ardupilot_csv(csv_file: str, columns: List[str], timestamp_col: str, kind: str) -> pd.DataFrame:
+    """
+    Read an ArduPilot CSV export, with or without a header row.
+
+    Headerless exports (e.g. data/gps_spoofing) are padded with empty trailing columns;
+    those are dropped and the standard column names are applied.
+    """
+    df = pd.read_csv(csv_file)
+    if timestamp_col in df.columns:
+        return df
+
+    df = pd.read_csv(csv_file, header=None).dropna(axis=1, how='all')
+    if df.shape[1] != len(columns):
+        raise ValueError(
+            f"Timestamp column '{timestamp_col}' not found in {kind} data, and the file has "
+            f"{df.shape[1]} non-empty columns (expected {len(columns)} for a headerless {kind} export)"
+        )
+    df.columns = columns
+    print(f"No header row found; applied standard {kind} column names")
+    return df
+
+
 def load_gps_data(gps_file: str, timestamp_col: str = 'TimeUS') -> pd.DataFrame:
     """
     Load GPS CSV file.
@@ -47,11 +76,8 @@ def load_gps_data(gps_file: str, timestamp_col: str = 'TimeUS') -> pd.DataFrame:
         GPS dataframe
     """
     print(f"Loading GPS data from {gps_file}...")
-    gps_df = pd.read_csv(gps_file)
-    
-    if timestamp_col not in gps_df.columns:
-        raise ValueError(f"Timestamp column '{timestamp_col}' not found in GPS data")
-    
+    gps_df = read_ardupilot_csv(gps_file, GPS_COLUMNS, timestamp_col, 'GPS')
+
     # Sort by timestamp
     gps_df = gps_df.sort_values(timestamp_col).reset_index(drop=True)
     gps_df[timestamp_col] = pd.to_numeric(gps_df[timestamp_col], errors='coerce')
@@ -145,11 +171,8 @@ def load_imu_data(imu_file: str, timestamp_col: str = 'TimeUS') -> pd.DataFrame:
         IMU dataframe
     """
     print(f"Loading IMU data from {imu_file}...")
-    imu_df = pd.read_csv(imu_file)
-    
-    if timestamp_col not in imu_df.columns:
-        raise ValueError(f"Timestamp column '{timestamp_col}' not found in IMU data")
-    
+    imu_df = read_ardupilot_csv(imu_file, IMU_COLUMNS, timestamp_col, 'IMU')
+
     # Filter IMU data - keep only one sensor (I=0) to avoid duplicates
     if 'I' in imu_df.columns:
         imu_df = imu_df[imu_df['I'] == 0].reset_index(drop=True)

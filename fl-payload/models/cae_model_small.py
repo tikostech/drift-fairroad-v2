@@ -121,7 +121,9 @@ class CAEFederatedModel:
         return reconstructed
 
     def get_weights(self):
-        return self.model.state_dict()
+        # CPU tensors: weights are pickled to other processes and saved in checkpoints, which must load
+        # on CPU-only machines too. On CPU this is the live state dict (.cpu() does not copy).
+        return {k: v.detach().cpu() for k, v in self.model.state_dict().items()}
 
     def set_weights(self, state_dict):
         self.model.load_state_dict(state_dict)

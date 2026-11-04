@@ -1,0 +1,26 @@
+{
+  "0": {
+    "start_timestamp": 36183021.0,
+    "end_timestamp": 225602223.0,
+    "gps_file": "data/train/gps-spoofing\\gps_client_000.csv",
+    "num_gps_samples": 6102,
+    "imu_file": "data/train/gps-spoofing\\imu_client_000.csv",
+    "num_imu_samples": 5084
+  },
+  "1": {
+    "start_timestamp": 225703016.0,
+    "end_timestamp": 410182528.0,
+    "gps_file": "data/train/gps-spoofing\\gps_client_001.csv",
+    "num_gps_samples": 6642,
+    "imu_file": "data/train/gps-spoofing\\imu_client_001.csv",
+    "num_imu_samples": 5534
+  },
+  "2": {
+    "start_timestamp": 410202520.0,
+    "end_timestamp": 595382585.0,
+    "gps_file": "data/train/gps-spoofing\\gps_client_002.csv",
+    "num_gps_samples": 6092,
+    "imu_file": "data/train/gps-spoofing\\imu_client_002.csv",
+    "num_imu_samples": 5095
+  }
+}

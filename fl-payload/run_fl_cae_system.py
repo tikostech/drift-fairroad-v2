@@ -11,10 +11,12 @@ import subprocess
 import time
 import requests
 import signal
+import socket
 import sys
 import os
 import matplotlib.pyplot as plt
 import pickle
+import json
 
 import config
 
@@ -26,10 +28,40 @@ def _debug(msg: str):
 class FLSystemRunner:
     """Runner for complete FL CAE system"""
 
-    def __init__(self, num_rounds=10):
+    def __init__(self, num_rounds=10, checkpoint_dir=None, sl_traces=False, sl_case_base=None,
+                 sl_gate_mode="enforce", sl_gate_scope="both", sl_policy=None, malicious_client=None,
+                 attack=None, attack_scale=None, absent_clients=None, final_eval=True):
         self.num_rounds = num_rounds
         self.processes = []
         self.server_url = f"http://{config.SERVER_HOST}:{config.SERVER_PORT}"
+        self.checkpoint_dir = checkpoint_dir or config.CHECKPOINT_DIR
+        self.sl_traces, self.sl_case_base = sl_traces, sl_case_base
+        self.sl_gate_mode, self.sl_gate_scope = sl_gate_mode, sl_gate_scope
+        # Optional server gate-policy overrides: {"max_rejections", "checkpoint_warmup", "checkpoint_stall_guard"}
+        self.sl_policy = {k: v for k, v in (sl_policy or {}).items() if v is not None}
+        self.malicious_client, self.attack, self.attack_scale = malicious_client, attack, attack_scale
+        # Clients that never start: a valid run with client dropout (e.g. for the SL case base).
+        self.absent_clients = list(absent_clients or [])
+        self.final_eval = final_eval
+        if len(self.absent_clients) > config.NUM_CLIENTS - config.MIN_CLIENTS:
+            raise ValueError(f"At most {config.NUM_CLIENTS - config.MIN_CLIENTS} absent client(s): "
+                             f"the server needs MIN_CLIENTS={config.MIN_CLIENTS} to start")
+
+    def write_run_meta(self):
+        """Record what this run was (clean or attacked) next to its checkpoints, for eval_sl_gate.py."""
+        os.makedirs(self.checkpoint_dir, exist_ok=True)
+        meta = {
+            "num_rounds": self.num_rounds, "num_clients": config.NUM_CLIENTS,
+            "malicious_client": self.malicious_client if self.attack else None,
+            "absent_clients": self.absent_clients,
+            "attack": self.attack, "attack_scale": self.attack_scale,
+            "sl_case_base": self.sl_case_base, "sl_gate_mode": self.sl_gate_mode if self.sl_case_base else None,
+            "sl_gate_scope": self.sl_gate_scope if self.sl_case_base else None,
+            "sl_policy": self.sl_policy if self.sl_case_base else None,
+            "started": time.strftime("%Y-%m-%dT%H:%M:%S"),
+        }
+        with open(os.path.join(self.checkpoint_dir, "run_meta.json"), "w") as f:
+            json.dump(meta, f, indent=2)
 
     def start_server(self):
         """Start FL server"""
@@ -38,6 +70,13 @@ class FLSystemRunner:
 
         # Server must bind to an address the runner can reach (localhost -> 127.0.0.1)
         bind_host = '127.0.0.1' if config.SERVER_HOST in ('localhost', '127.0.0.1') else config.SERVER_HOST
+        # A server already on this port (another run) would pass the readiness check and take our clients,
+        # leaving this run's server with no updates and the other run with extra rounds.
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            s.settimeout(1)
+            if s.connect_ex((bind_host, config.SERVER_PORT)) == 0:
+                print(f"✗ Port {config.SERVER_PORT} is already in use (another FL run?). Wait for it to finish.")
+                return False
         server_process = subprocess.Popen(
             [
                 sys.executable, 'fl_server.py',
@@ -46,7 +85,11 @@ class FLSystemRunner:
                 '--num-clients', str(config.NUM_CLIENTS),
                 '--min-clients', str(config.MIN_CLIENTS),
                 '--aggregation', config.AGGREGATION_STRATEGY,
-            ],
+                '--checkpoint-dir', self.checkpoint_dir,
+            ] + (['--sl-traces'] if self.sl_traces else [])
+              + (['--sl-case-base', self.sl_case_base, '--sl-gate-mode', self.sl_gate_mode,
+                  '--sl-gate-scope', self.sl_gate_scope] if self.sl_case_base else [])
+              + [a for k, v in self.sl_policy.items() for a in (f"--sl-{k.replace('_', '-')}", str(v))],
             stdout=None,
             stderr=None,
             cwd=os.path.dirname(os.path.abspath(__file__)),
@@ -84,6 +127,9 @@ class FLSystemRunner:
 
         for i in range(config.NUM_CLIENTS):
             client_id = f"client_{i+1}"
+            if client_id in self.absent_clients:
+                print(f"   Skipping {client_id} (absent)")
+                continue
             print(f"   Starting {client_id}...")
             _debug(f"start_clients: starting {client_id}")
 
@@ -96,7 +142,9 @@ class FLSystemRunner:
                     '--noisy-dir', config.NOISY_IMAGE_DIR,
                     '--server-url', self.server_url,
                     '--num-rounds', str(self.num_rounds)
-                ],
+                ] + (['--attack', self.attack] if self.attack and client_id == self.malicious_client else [])
+                  + (['--attack-scale', str(self.attack_scale)]
+                     if self.attack and client_id == self.malicious_client and self.attack_scale is not None else []),
                 cwd=os.path.dirname(os.path.abspath(__file__)),
             )
 
@@ -169,7 +217,7 @@ class FLSystemRunner:
         """Generate training loss plot from checkpoints"""
         print(f"\n📊 Generating loss plot...")
 
-        checkpoint_dir = config.CHECKPOINT_DIR
+        checkpoint_dir = self.checkpoint_dir
         if not os.path.exists(checkpoint_dir):
             print("  Checkpoint directory not found, skipping plot")
             return
@@ -211,7 +259,7 @@ class FLSystemRunner:
         print(f"\n📊 Evaluating final model...")
 
         # Find latest checkpoint
-        checkpoint_dir = config.CHECKPOINT_DIR
+        checkpoint_dir = self.checkpoint_dir
         if os.path.exists(checkpoint_dir):
             checkpoints = [
                 f for f in os.listdir(checkpoint_dir)
@@ -280,6 +328,8 @@ class FLSystemRunner:
             print("="*70)
             _debug("run: starting server")
 
+            self.write_run_meta()
+
             # Start server
             if not self.start_server():
                 _debug("run: server failed to start, exiting")
@@ -309,7 +359,7 @@ class FLSystemRunner:
             print("="*70)
 
             # List checkpoints
-            checkpoint_dir = config.CHECKPOINT_DIR
+            checkpoint_dir = self.checkpoint_dir
             if os.path.exists(checkpoint_dir):
                 checkpoints = [f for f in os.listdir(checkpoint_dir) if f.endswith('.pt')]
                 if checkpoints:
@@ -326,7 +376,8 @@ class FLSystemRunner:
             print(f"\n✓ Training artifacts saved successfully!\n")
 
             # Evaluate model
-            self.evaluate_model()
+            if self.final_eval:
+                self.evaluate_model()
 
         except KeyboardInterrupt:
             print("\n\n⚠️  Interrupted by user")
@@ -347,13 +398,50 @@ def main():
     parser = argparse.ArgumentParser(description="Run FL CAE System")
     parser.add_argument('--num-rounds', type=int, default=10,
                         help='Number of FL rounds (default: 10)')
+    parser.add_argument('--checkpoint-dir', default=None,
+                        help=f'Checkpoint directory (default: {config.CHECKPOINT_DIR})')
+    parser.add_argument('--sl-traces', action='store_true',
+                        help='Archive SL traces of every client update and checkpoint')
+    parser.add_argument('--sl-case-base', default=None,
+                        help='SL case base (.npz) the server gates models against')
+    parser.add_argument('--sl-gate-mode', choices=['enforce', 'audit'], default='enforce')
+    parser.add_argument('--sl-gate-scope', choices=['both', 'checkpoint', 'clients'], default='both')
+    parser.add_argument('--sl-max-rejections', type=int, default=None,
+                        help='Server: most client updates rejected per round (default: fewer than half)')
+    parser.add_argument('--sl-checkpoint-warmup', type=int, default=None,
+                        help='Server: checkpoints of the first N rounds are not gated (default: 1)')
+    parser.add_argument('--sl-checkpoint-stall-guard', type=int, default=None,
+                        help='Server: admit the next checkpoint after N consecutive rejections (default: 1; -1 off)')
+    parser.add_argument('--malicious-client', default='client_3',
+                        help='Client that runs --attack (default: client_3)')
+    parser.add_argument('--attack', choices=['sign_flip', 'scale', 'noise', 'inverted'], default=None,
+                        help='Make --malicious-client submit poisoned updates')
+    parser.add_argument('--attack-scale', type=float, default=None)
+    parser.add_argument('--no-final-eval', action='store_true',
+                        help='Skip the evaluation of the last checkpoint after training (saves ~40 s per run)')
+    parser.add_argument('--absent-client', action='append', default=[], metavar='CLIENT_ID',
+                        help='Do not start this client (valid client dropout); repeatable')
     args = parser.parse_args()
 
     # Setup signal handler
     signal.signal(signal.SIGINT, signal_handler)
 
     # Run system
-    runner = FLSystemRunner(num_rounds=args.num_rounds)
+    runner = FLSystemRunner(
+        num_rounds=args.num_rounds,
+        checkpoint_dir=args.checkpoint_dir,
+        sl_traces=args.sl_traces,
+        sl_case_base=args.sl_case_base,
+        sl_gate_mode=args.sl_gate_mode,
+        sl_gate_scope=args.sl_gate_scope,
+        sl_policy=dict(max_rejections=args.sl_max_rejections, checkpoint_warmup=args.sl_checkpoint_warmup,
+                       checkpoint_stall_guard=args.sl_checkpoint_stall_guard),
+        malicious_client=args.malicious_client,
+        attack=args.attack,
+        attack_scale=args.attack_scale,
+        absent_clients=args.absent_client,
+        final_eval=not args.no_final_eval,
+    )
     runner.run()
 
 

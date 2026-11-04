@@ -5,6 +5,7 @@ Loads clean and noisy image pairs for federated learning.
 Each client gets a subset of image pairs.
 """
 import os
+import numpy as np
 import torch
 from torch.utils.data import Dataset, DataLoader
 from PIL import Image
@@ -18,23 +19,41 @@ logger = logging.getLogger(__name__)
 class CAEImageDataset(Dataset):
     """Dataset for clean/noisy image pairs"""
 
-    def __init__(self, clean_paths, noisy_paths, transform=None):
+    def __init__(self, clean_paths, noisy_paths, transform=None, cache=False):
         """
         Args:
             clean_paths: List of paths to clean images
             noisy_paths: List of paths to noisy images
             transform: Torchvision transforms
+            cache: Decode every image once up front instead of on every access. Decoding and
+                resizing the JPEGs took ~3 s per client epoch against ~0.3 s of training. When the
+                transform ends in ToTensor, images are kept as resized uint8 and converted on access
+                exactly as ToTensor does (bit-identical, a quarter of the memory of float tensors).
         """
         assert len(clean_paths) == len(noisy_paths), "Mismatch in clean/noisy image counts"
 
         self.clean_paths = clean_paths
         self.noisy_paths = noisy_paths
         self.transform = transform
+        self._cache = None
+        if cache:
+            steps = list(getattr(transform, "transforms", []))
+            if steps and isinstance(steps[-1], transforms.ToTensor):
+                pre = transforms.Compose(steps[:-1])
+                load = lambda p: torch.from_numpy(np.array(pre(Image.open(p).convert('RGB')))).permute(2, 0, 1).contiguous()
+                self._to_tensor = lambda x: x.float().div(255)
+            else:
+                load = lambda p: self.transform(Image.open(p).convert('RGB')) if self.transform else Image.open(p).convert('RGB')
+                self._to_tensor = lambda x: x
+            self._cache = [(load(n), load(c)) for n, c in zip(noisy_paths, clean_paths)]
 
     def __len__(self):
         return len(self.clean_paths)
 
     def __getitem__(self, idx):
+        if self._cache is not None:
+            noisy, clean = self._cache[idx]
+            return self._to_tensor(noisy), self._to_tensor(clean)
         # Load images
         clean_img = Image.open(self.clean_paths[idx]).convert('RGB')
         noisy_img = Image.open(self.noisy_paths[idx]).convert('RGB')
@@ -50,7 +69,7 @@ class CAEImageDataset(Dataset):
 class CAEDataPreprocessor:
     """Preprocessor for distributing image pairs across FL clients"""
 
-    def __init__(self, clean_dir, noisy_dir, img_size=224, num_clients=3):
+    def __init__(self, clean_dir, noisy_dir, img_size=224, num_clients=3, cache=False):
         """
         Args:
             clean_dir: Directory containing clean images
@@ -62,6 +81,7 @@ class CAEDataPreprocessor:
         self.noisy_dir = noisy_dir
         self.img_size = img_size
         self.num_clients = num_clients
+        self.cache = cache  # decode images once (clients reread the same data every round)
 
         # Define transforms
         self.transform = transforms.Compose([
@@ -130,7 +150,8 @@ class CAEDataPreprocessor:
         dataset = CAEImageDataset(
             client_clean_paths,
             client_noisy_paths,
-            transform=self.transform
+            transform=self.transform,
+            cache=self.cache,
         )
 
         logger.info(f"Client {client_id}: {len(dataset)} image pairs (indices {start_idx}-{end_idx})")

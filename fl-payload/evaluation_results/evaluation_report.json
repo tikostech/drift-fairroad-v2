@@ -1,7 +1,7 @@
 {
   "task": "autoencoder",
   "checkpoint_dir": "",
-  "model_path": "checkpoints\\server_round_10.pt",
+  "model_path": "sl_runs_demo/gated\\server_round_10.pt",
   "num_checkpoints": 1,
   "rounds_evaluated": [
     1
@@ -9,16 +9,16 @@
   "summary": {
     "best_round_mse": 1,
     "best_round_ssim": 1,
-    "best_mse": 0.0321671096831114,
-    "best_ssim": 0.4042491880719533,
+    "best_mse": 0.03166137706532985,
+    "best_ssim": 0.3930181964428839,
     "final_round": 1,
-    "final_mse": 0.0321671096831114,
-    "final_ssim": 0.4042491880719533,
+    "final_mse": 0.03166137706532985,
+    "final_ssim": 0.3930181964428839,
     "n_rounds": 1
   },
   "reconstruction_quality": {
-    "final_mse": 0.0321671096831114,
-    "final_ssim": 0.4042491880719533,
+    "final_mse": 0.03166137706532985,
+    "final_ssim": 0.3930181964428839,
     "best_round_mse": 1,
     "best_round_ssim": 1
   },
@@ -26,8 +26,8 @@
     "mse": {
       "reference": "fixed_validation",
       "metric": "mse",
-      "mse_at_round_0": 0.0321671096831114,
-      "mse_at_final_round": 0.0321671096831114,
+      "mse_at_round_0": 0.03166137706532985,
+      "mse_at_final_round": 0.03166137706532985,
       "drift_at_final_round": 0.0,
       "drift_per_round": {
         "1": 0.0
@@ -36,8 +36,8 @@
     "ssim": {
       "reference": "fixed_validation",
       "metric": "ssim",
-      "ssim_at_round_0": 0.4042491880719533,
-      "ssim_at_final_round": 0.4042491880719533,
+      "ssim_at_round_0": 0.3930181964428839,
+      "ssim_at_final_round": 0.3930181964428839,
       "drift_at_final_round": 0.0,
       "drift_per_round": {
         "1": 0.0
@@ -56,49 +56,49 @@
     "model_size_mb": 2.8878
   },
   "non_iid_resilience": {
-    "mse_cv": 0.13430082464399115,
-    "mse_mean": 0.039519474845172986,
-    "mse_std": 0.005307498061204197,
-    "ssim_cv": 0.13938269132288225,
-    "ssim_mean": 0.3380622369133764,
-    "ssim_std": 0.04712002441562023,
-    "non_iid_resilience_mse": 0.8656991753560088,
-    "non_iid_resilience_ssim": 0.9288150230379681
+    "mse_cv": 0.15410431828621723,
+    "mse_mean": 0.039735861188688625,
+    "mse_std": 0.006123467799998618,
+    "ssim_cv": 0.11856065668202591,
+    "ssim_mean": 0.3365848730874599,
+    "ssim_std": 0.03990572358248559,
+    "non_iid_resilience_mse": 0.8458956817137828,
+    "non_iid_resilience_ssim": 0.9398480348673953
   },
   "client_heterogeneity": {
     "mse": {
-      "mean": 0.039519474845172986,
-      "std": 0.005307498061204197,
-      "min": 0.0321671096831114,
-      "max": 0.044503842580265233
+      "mean": 0.039735861188688625,
+      "std": 0.006123467799998618,
+      "min": 0.03166137706532985,
+      "max": 0.04648369662685409
     },
     "ssim": {
-      "mean": 0.3380622369133764,
-      "std": 0.04712002441562023,
-      "min": 0.29826721870256756,
-      "max": 0.4042491880719533
+      "mean": 0.3365848730874599,
+      "std": 0.03990572358248559,
+      "min": 0.3079679948943002,
+      "max": 0.3930181964428839
     }
   },
   "evaluation_results": {
     "1": {
       "fixed_validation": {
-        "mse": 0.0321671096831114,
-        "ssim": 0.4042491880719533,
+        "mse": 0.03166137706532985,
+        "ssim": 0.3930181964428839,
         "num_images": 167
       },
       "client_1": {
-        "mse": 0.0321671096831114,
-        "ssim": 0.4042491880719533,
+        "mse": 0.03166137706532985,
+        "ssim": 0.3930181964428839,
         "num_images": 167
       },
       "client_2": {
-        "mse": 0.041887472272142325,
-        "ssim": 0.29826721870256756,
+        "mse": 0.041062509873881936,
+        "ssim": 0.30876842792519554,
         "num_images": 167
       },
       "client_3": {
-        "mse": 0.044503842580265233,
-        "ssim": 0.3116703039656083,
+        "mse": 0.04648369662685409,
+        "ssim": 0.3079679948943002,
         "num_images": 168
       }
     }

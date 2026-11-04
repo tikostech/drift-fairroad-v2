@@ -121,6 +121,7 @@ From **project root**, run the CAE system with working directory set to `fl-payl
 
 ```bash
 cd fl-payload; python run_fl_cae_system.py --num-rounds 10
+python fl-payload/run_fl_cae_system.py --num-rounds 10
 ```
 
 Evaluate (also from project root, run from inside `fl-payload`):

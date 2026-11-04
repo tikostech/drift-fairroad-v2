@@ -1,0 +1,2 @@
+# Checkpoints are large; traces, logs and case bases are small enough to keep.
+*.pt

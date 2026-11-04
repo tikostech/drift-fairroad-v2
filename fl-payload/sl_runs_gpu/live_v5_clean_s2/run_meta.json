@@ -1,0 +1,13 @@
+{
+  "num_rounds": 10,
+  "num_clients": 3,
+  "malicious_client": null,
+  "absent_clients": [],
+  "attack": null,
+  "attack_scale": null,
+  "sl_case_base": "sl_runs_gpu/case_base_v2.npz",
+  "sl_gate_mode": "enforce",
+  "sl_gate_scope": "both",
+  "sl_policy": {},
+  "started": "2026-10-06T19:03:11"
+}

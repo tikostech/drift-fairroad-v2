@@ -4,7 +4,7 @@ FEDERATED LEARNING CAE EVALUATION REPORT
 
 Task: autoencoder
 Checkpoint directory: N/A
-Model path: checkpoints\server_round_10.pt
+Model path: sl_runs_demo/gated\server_round_10.pt
 Rounds evaluated: 1 to 1
 
 ======================================================================
@@ -12,23 +12,23 @@ SUMMARY STATISTICS
 ======================================================================
 
   Best round (MSE):  1
-  Best MSE:          0.032167
+  Best MSE:          0.031661
   Best round (SSIM): 1
-  Best SSIM:         0.4042
+  Best SSIM:         0.3930
   Final round:       1
-  Final MSE:         0.032167
-  Final SSIM:        0.4042
+  Final MSE:         0.031661
+  Final SSIM:        0.3930
 
 ======================================================================
 DRIFT RESISTANCE
 ======================================================================
 
-  MSE at round 0: 0.032167
-  MSE at final:   0.032167
+  MSE at round 0: 0.031661
+  MSE at final:   0.031661
   MSE drift (final): 0.000000
 
-  SSIM at round 0: 0.4042
-  SSIM at final:   0.4042
+  SSIM at round 0: 0.3930
+  SSIM at final:   0.3930
 
 ======================================================================
 CONVERGENCE STABILITY
@@ -45,11 +45,11 @@ EFFICIENCY
 NON-IID RESILIENCE (CLIENT HETEROGENEITY)
 ======================================================================
 
-  mse_cv: 0.13430082464399115
-  mse_mean: 0.039519474845172986
-  mse_std: 0.005307498061204197
-  ssim_cv: 0.13938269132288225
-  ssim_mean: 0.3380622369133764
-  ssim_std: 0.04712002441562023
-  non_iid_resilience_mse: 0.8656991753560088
-  non_iid_resilience_ssim: 0.9288150230379681
+  mse_cv: 0.15410431828621723
+  mse_mean: 0.039735861188688625
+  mse_std: 0.006123467799998618
+  ssim_cv: 0.11856065668202591
+  ssim_mean: 0.3365848730874599
+  ssim_std: 0.03990572358248559
+  non_iid_resilience_mse: 0.8458956817137828
+  non_iid_resilience_ssim: 0.9398480348673953

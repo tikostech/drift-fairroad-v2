@@ -1,0 +1,24 @@
+Client File Mapping
+================================================================================
+
+Client 0:
+  GPS: data/train/gps-spoofing\gps_client_000.csv
+  GPS Samples: 6102
+  IMU: data/train/gps-spoofing\imu_client_000.csv
+  IMU Samples: 5084
+  Time Range: 36183021 to 225602223
+
+Client 1:
+  GPS: data/train/gps-spoofing\gps_client_001.csv
+  GPS Samples: 6642
+  IMU: data/train/gps-spoofing\imu_client_001.csv
+  IMU Samples: 5534
+  Time Range: 225703016 to 410182528
+
+Client 2:
+  GPS: data/train/gps-spoofing\gps_client_002.csv
+  GPS Samples: 6092
+  IMU: data/train/gps-spoofing\imu_client_002.csv
+  IMU Samples: 5095
+  Time Range: 410202520 to 595382585
+

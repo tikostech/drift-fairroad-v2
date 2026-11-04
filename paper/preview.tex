@@ -1,0 +1,71 @@
+% Preview of every generated table and figure in IEEEtran layout.
+% Compile from this directory (e.g. upload paper/ to Overleaf):  pdflatex preview.tex
+% Regenerate the inputs with:  cd fl-payload && python make_paper_assets.py
+\documentclass[conference]{IEEEtran}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage[hidelinks]{hyperref}
+\input{results.tex}
+
+\begin{document}
+\title{SL-Trace Gating of Federated Learning Checkpoints\\(asset preview)}
+\author{\IEEEauthorblockN{Auto-generated from fl-payload/sl\_runs\_gpu}}
+\maketitle
+
+\section{Results (macro examples)}
+The case base holds \resBaseModels{} valid models from \resBaseRuns{} runs; held out run by run,
+\resHeldOutFPR{} of them are flagged. Live, the final gate falsely rejected \resUpdFalseRejVSix{}
+honest client updates (\resUpdFalseRejRateVSix{}), against \resUpdFalseRejVOne{} (\resUpdFalseRejRateVOne{})
+for the original gate, while catching \resAttackerCaughtVSix{} malicious updates (original:
+\resAttackerCaughtVOne{}). Against update scaling it rejected \resScaleAttackerRejected{} malicious
+updates and kept the final validation MSE at \resScaleGatedMSE{} (ungated: \resScaleUngatedMSE{}).
+Tracing costs \resTraceSeconds{}\,s per model against a \resRoundSeconds{}\,s round.
+
+\input{tables/setup.tex}
+\input{tables/overhead.tex}
+\input{tables/detection.tex}
+\input{tables/enforcement.tex}
+\input{tables/versions.tex}
+\input{tables/ablation.tex}
+\input{tables/calibration.tex}
+
+\begin{figure*}[!t]
+  \centering
+  \includegraphics[width=\textwidth]{figures/scores_by_round.pdf}
+  \caption{Gate score relative to the per-round threshold (log scale). Grey band: 5--95\% of held-out
+  valid models. Lines: median over spoofed models across runs.}
+  \label{fig:scores}
+\end{figure*}
+
+\begin{figure*}[!t]
+  \centering
+  \includegraphics[width=\textwidth]{figures/quality_by_round.pdf}
+  \caption{Validation MSE of the global model in force per round: attacked runs without a gate and
+  with the final SL gate (mean; shaded: range over runs) against clean runs.}
+  \label{fig:quality}
+\end{figure*}
+
+\begin{figure*}[!t]
+  \centering
+  \includegraphics[width=\textwidth]{figures/roc.pdf}
+  \caption{ROC of the gate score per attack: spoofed models vs.\ held-out valid models of the same kind.}
+  \label{fig:roc}
+\end{figure*}
+
+\begin{figure}[!t]
+  \centering
+  \includegraphics[width=\columnwidth]{figures/versions.pdf}
+  \caption{False-rejection rate (honest updates and checkpoints) and attacker detection of each live
+  gate version; v6 is the final configuration.}
+  \label{fig:versions}
+\end{figure}
+
+\begin{figure}[!t]
+  \centering
+  \includegraphics[width=\columnwidth]{figures/calibration.pdf}
+  \caption{Leave-one-run-out trace distance of valid models per round and the per-round threshold.}
+  \label{fig:calibration}
+\end{figure}
+
+\end{document}

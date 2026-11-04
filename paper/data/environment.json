@@ -1,0 +1,7 @@
+{
+  "device": "cuda",
+  "gpu": "NVIDIA GeForce RTX 4070 Laptop GPU",
+  "torch": "2.14.1+cu130",
+  "label": "GPU (NVIDIA GeForce RTX 4070 Laptop GPU), PyTorch 2.14.1+cu130",
+  "runs_dir": "sl_runs_gpu"
+}

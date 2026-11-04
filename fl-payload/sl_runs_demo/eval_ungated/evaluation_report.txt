@@ -1,0 +1,63 @@
+======================================================================
+FEDERATED LEARNING CAE EVALUATION REPORT
+======================================================================
+
+Task: autoencoder
+Checkpoint directory: sl_runs_demo/ungated
+Model path: N/A
+Rounds evaluated: 1 to 10
+
+======================================================================
+SUMMARY STATISTICS
+======================================================================
+
+  Best round (MSE):  10
+  Best MSE:          0.052062
+  Best round (SSIM): 9
+  Best SSIM:         0.3979
+  Final round:       10
+  Final MSE:         0.052062
+  Final SSIM:        0.3762
+
+======================================================================
+DRIFT RESISTANCE
+======================================================================
+
+  MSE at round 0: 0.077108
+  MSE at final:   0.052062
+  MSE drift (final): -0.025046
+
+  SSIM at round 0: 0.0837
+  SSIM at final:   0.3762
+
+======================================================================
+CONVERGENCE STABILITY
+======================================================================
+
+  MSE round stabilized: 5
+  MSE variance (last n rounds): 0.000010
+
+  SSIM round stabilized: 10
+
+======================================================================
+EFFICIENCY
+======================================================================
+
+  total_parameters: 757011
+  model_size_mb: 2.8878
+  checkpoint_file_sizes_bytes: [3036077, 3036077, 3036077, 3036077, 3036077, 3036077, 3036077, 3036077, 3036077, 3036107]
+  mean_checkpoint_size_mb: 2.8954
+  communication_overhead_per_round_mb: 17.3726
+
+======================================================================
+NON-IID RESILIENCE (CLIENT HETEROGENEITY)
+======================================================================
+
+  mse_cv: 0.10157774790347916
+  mse_mean: 0.05646595283002125
+  mse_std: 0.005735684321697645
+  ssim_cv: 0.16765705195834346
+  ssim_mean: 0.30852676144709107
+  ssim_std: 0.05172668727447439
+  non_iid_resilience_mse: 0.8984222520965208
+  non_iid_resilience_ssim: 0.9251935080195928

@@ -20,10 +20,12 @@ Evaluation dimensions (aligned with root evaluate_fl_system.py):
    - Model size (parameters, MB), checkpoint size, communication overhead per round
 
 Outputs: evaluation_report.json, evaluation_report.txt, and plots (metrics over rounds,
-client heterogeneity, drift).
+client heterogeneity, drift). With --sl-features, also sl_features.npz: SynapsesLogger-minimised
+activation features per image (see sl_probe_cae.py), keyed by round and dataset.
 """
 from __future__ import annotations
 
+import contextlib
 import os
 import json
 import re
@@ -42,6 +44,7 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
 from data_preprocessing_cae import CAEDataPreprocessor
+from sl_probe_cae import CAESLProbe
 import config
 
 
@@ -85,11 +88,17 @@ class CAEEvaluator:
         self,
         model_path: Optional[str] = None,
         checkpoint_dir: Optional[str] = None,
+        sl_features: bool = False,
+        sl_scope: str = "role",
+        sl_bands: int = 1,
     ):
         """
         Args:
             model_path: Single checkpoint path (optional).
             checkpoint_dir: Directory with server_round_*.pt for multi-round evaluation (optional).
+            sl_features: Collect SynapsesLogger-minimised activation features during evaluation.
+            sl_scope: "role" (reduce depth per encoder/decoder family) or "net" (pool all conv layers).
+            sl_bands: Contiguous depth windows reduced separately (1 = whole family).
         """
         self.model_path = model_path
         self.checkpoint_dir = checkpoint_dir
@@ -105,6 +114,11 @@ class CAEEvaluator:
         self.checkpoints: Dict[int, str] = {}  # round -> path
         self.evaluation_results: Dict[int, Dict[str, Dict[str, float]]] = defaultdict(dict)  # round -> client_id -> metrics
         self._param_count: Optional[int] = None
+
+        # load() replaces weights in place, so hooks on self.model.model stay valid across checkpoints.
+        self.sl_probe = CAESLProbe(self.model.model, scope=sl_scope, bands=sl_bands) if sl_features else None
+        self.sl_results: Dict[str, np.ndarray] = {}  # "round_<r>_<dataset>" -> (n_images, n_features)
+        self.sl_names: List[str] = []
 
         print(f"Model loaded on {self.device}")
         print(f"Parameters: {self.model.count_parameters():,}")
@@ -131,13 +145,21 @@ class CAEEvaluator:
         self,
         dataloader: DataLoader,
         max_batches: Optional[int] = None,
+        sl_key: Optional[str] = None,
     ) -> Dict[str, Any]:
-        """Evaluate current model on a dataloader. Returns mse, ssim, num_images."""
+        """Evaluate current model on a dataloader. Returns mse, ssim, num_images.
+
+        If SL features are enabled and sl_key is given, the per-image features from these
+        forward passes are stored in self.sl_results[sl_key].
+        """
         self.model.model.eval()
         total_mse = 0.0
         total_ssim = 0.0
         num_images = 0
-        with torch.no_grad():
+        probe = self.sl_probe if sl_key else None
+        if probe:
+            probe.reset()
+        with torch.no_grad(), (probe.capture() if probe else contextlib.nullcontext()):
             for batch_idx, (noisy_batch, clean_batch) in enumerate(dataloader):
                 if max_batches is not None and batch_idx >= max_batches:
                     break
@@ -149,6 +171,8 @@ class CAEEvaluator:
                     total_mse += calculate_mse(reconstructed_batch[i], clean_batch[i])
                     total_ssim += calculate_ssim(reconstructed_batch[i], clean_batch[i])
                     num_images += 1
+        if probe:
+            self.sl_results[sl_key], self.sl_names = probe.features()
         n = max(num_images, 1)
         return {
             "mse": total_mse / n,
@@ -161,8 +185,12 @@ class CAEEvaluator:
         clean_dir: str,
         noisy_dir: str,
         num_clients: int = 3,
+        sl_round: Optional[int] = None,
     ) -> Dict[str, Dict[str, float]]:
-        """Evaluate current model on all clients. Returns {client_1: {mse, ssim, num_images}, ...}."""
+        """Evaluate current model on all clients. Returns {client_1: {mse, ssim, num_images}, ...}.
+
+        sl_round: round number to key SL features under (round_<r>_client_<k>); None skips capture.
+        """
         preprocessor = CAEDataPreprocessor(
             clean_dir=clean_dir,
             noisy_dir=noisy_dir,
@@ -176,7 +204,8 @@ class CAEEvaluator:
                 batch_size=config.BATCH_SIZE,
                 shuffle=False,
             )
-            res = self.evaluate_on_dataset(dataloader)
+            sl_key = f"round_{sl_round}_client_{cid + 1}" if sl_round is not None else None
+            res = self.evaluate_on_dataset(dataloader, sl_key=sl_key)
             all_results[f"client_{cid + 1}"] = res
         return all_results
 
@@ -223,10 +252,10 @@ class CAEEvaluator:
             path = self.checkpoints[round_num]
             self.model.load(path)
             # Fixed validation set (for drift/convergence)
-            res_fixed = self.evaluate_on_dataset(fixed_dl)
+            res_fixed = self.evaluate_on_dataset(fixed_dl, sl_key=f"round_{round_num}_fixed_validation")
             self.evaluation_results[round_num]["fixed_validation"] = res_fixed
             if evaluate_clients:
-                client_results = self.evaluate_all_clients(clean_dir, noisy_dir, num_clients)
+                client_results = self.evaluate_all_clients(clean_dir, noisy_dir, num_clients, sl_round=round_num)
                 for cid, data in client_results.items():
                     self.evaluation_results[round_num][cid] = data
             # print(f"  Round {round_num}: MSE={res_fixed['mse']:.6f}, SSIM={res_fixed['ssim']:.4f}")
@@ -590,7 +619,7 @@ class CAEEvaluator:
         else:
             # Single checkpoint: one-round evaluation
             if self.model_path:
-                client_results = self.evaluate_all_clients(clean_dir, noisy_dir, num_clients)
+                client_results = self.evaluate_all_clients(clean_dir, noisy_dir, num_clients, sl_round=1)
                 r = 1
                 self.evaluation_results[r] = {"fixed_validation": client_results.get("client_1", {})}
                 for cid, data in client_results.items():
@@ -598,6 +627,8 @@ class CAEEvaluator:
                 self.checkpoints[r] = self.model_path
 
         self.generate_report(output_dir)
+        if self.sl_results:
+            self.save_sl_features(output_dir)
         print("\n" + "=" * 70)
         print("EVALUATION COMPLETE")
         print("=" * 70)
@@ -608,7 +639,22 @@ class CAEEvaluator:
             print("  - cae_metrics_over_rounds.png")
             print("  - cae_client_heterogeneity.png")
             print("  - cae_drift_over_rounds.png")
+        if self.sl_results:
+            print(f"  - sl_features.npz ({len(self.sl_results)} datasets x {len(self.sl_names)} features)")
         return self.compute_summary()
+
+    def save_sl_features(self, output_dir: str) -> str:
+        """Save SL features: one (n_images, n_features) array per key, plus feature names and settings."""
+        os.makedirs(output_dir, exist_ok=True)
+        path = os.path.join(output_dir, "sl_features.npz")
+        np.savez(
+            path,
+            names=np.array(self.sl_names),
+            scope=self.sl_probe.scope,
+            bands=self.sl_probe.bands,
+            **self.sl_results,
+        )
+        return path
 
     def save_reconstructions(self, dataloader: DataLoader, output_dir: str, num_samples: int = 10) -> None:
         """Save sample reconstructions (noisy, reconstructed, clean)."""
@@ -652,12 +698,23 @@ def main():
     parser.add_argument("--rounds", type=int, nargs="+", default=None, help="Specific rounds to evaluate (default: all)")
     parser.add_argument("--no-client-eval", action="store_true", help="Skip per-client evaluation (faster)")
     parser.add_argument("--save-reconstructions", action="store_true", help="Save sample reconstructions")
+    parser.add_argument("--sl-features", action="store_true", help="Save SynapsesLogger-minimised activation features (sl_features.npz)")
+    parser.add_argument("--sl-scope", choices=["role", "net"], default="role", help="Reduce depth per encoder/decoder family (role) or across all conv layers (net)")
+    parser.add_argument("--sl-bands", type=int, default=1, help="Depth windows reduced separately (default: 1 = whole family)")
     args = parser.parse_args()
 
     if not args.model_path and not args.checkpoint_dir:
         parser.error("Provide either --model-path or --checkpoint-dir")
+    if args.model_path and not os.path.exists(args.model_path):
+        parser.error(f"--model-path not found: {args.model_path}")
 
-    evaluator = CAEEvaluator(model_path=args.model_path, checkpoint_dir=args.checkpoint_dir)
+    evaluator = CAEEvaluator(
+        model_path=args.model_path,
+        checkpoint_dir=args.checkpoint_dir,
+        sl_features=args.sl_features,
+        sl_scope=args.sl_scope,
+        sl_bands=args.sl_bands,
+    )
     evaluator.run_full_evaluation(
         clean_dir=args.clean_dir,
         noisy_dir=args.noisy_dir,

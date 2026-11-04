@@ -92,8 +92,14 @@ SERVER_PORT = 5544
 NUM_CLIENTS = 3
 MIN_CLIENTS = 2  # Minimum clients needed to start aggregation
 # Delay (seconds) per client index before starting round 1 (0, CLIENT_STAGGER_SEC, 2*CLIENT_STAGGER_SEC, ...)
-# Use a small value (e.g. 5–10) so all clients start soon; was 120 which made client_2/3 wait 2–4 minutes.
-CLIENT_STAGGER_SEC = 10
+# Only needed to spread out the first model download for the full-size CAE (~48 MB); the small CAE is
+# ~3 MB, so 0. Use 5-10 with models.cae_model.
+CLIENT_STAGGER_SEC = 0
+
+# Torch CPU threads per client process. 'auto' = cpu_count // NUM_CLIENTS, for the usual case of all
+# clients simulated on one machine (each client defaulting to every core oversubscribes the CPU and
+# roughly doubles training time). None keeps torch's default (one client per machine).
+CLIENT_TORCH_THREADS = 'auto'
 
 # Aggregation strategy: 'fedavg', 'fedavgm', or 'weighted'
 AGGREGATION_STRATEGY = 'fedavg'
@@ -113,6 +119,14 @@ BATCH_SIZE = 32
 # Output directory for checkpoints and plots
 CHECKPOINT_DIR = 'checkpoints'
 PLOT_DIR = 'plots'
+
+# ============================================================================
+# SL GATE (fl_server.py --sl-traces / --sl-case-base, see sl_gate.py)
+# ============================================================================
+
+# Probe images the server traces every model on, spread evenly over NOISY_IMAGE_DIR.
+# Changing this invalidates existing case bases (they record the probe set's hash).
+SL_PROBE_IMAGES = 32
 
 # ============================================================================
 # COMPUTED PARAMETERS (Don't modify)

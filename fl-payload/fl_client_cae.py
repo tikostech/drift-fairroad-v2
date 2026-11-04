@@ -2,8 +2,16 @@
 Federated Learning Client for Convolutional Autoencoder
 
 Trains CAE on local clean/noisy image pairs and shares weights with server.
+
+--attack turns the client malicious, for testing the server's SL gate. With update = trained
+weights - weights at the start of the round:
+  sign_flip  submit start - scale * update        (default scale 1)
+  scale      submit start + scale * update        (default scale 10, a boosted/replacement update)
+  noise      submit trained + scale * std(tensor) * N(0, 1) per tensor   (default scale 0.5)
+  inverted   train on swapped pairs (clean -> noisy), i.e. learn to produce the perturbation
 """
 import asyncio
+import os
 import pickle
 import torch
 import aiohttp
@@ -26,10 +34,32 @@ def _debug(client_id: str, msg: str):
     pass  # print(f"[FL-CLIENT {client_id}] {msg}", flush=True)
 
 
+ATTACKS = ("sign_flip", "scale", "noise", "inverted")
+DEFAULT_ATTACK_SCALE = {"sign_flip": 1.0, "scale": 10.0, "noise": 0.5, "inverted": None}
+
+
+def poison_weights(attack: str, scale: float, start: dict, trained: dict) -> dict:
+    """Weights a malicious client submits instead of its honestly trained ones."""
+    out = {}
+    for k, w in trained.items():
+        if not w.is_floating_point():
+            out[k] = w.clone()
+        elif attack == "sign_flip":
+            out[k] = start[k] - scale * (w - start[k])
+        elif attack == "scale":
+            out[k] = start[k] + scale * (w - start[k])
+        elif attack == "noise":
+            out[k] = w + scale * w.std() * torch.randn_like(w)
+        else:
+            out[k] = w.clone()
+    return out
+
+
 class FLClientCAE:
     """Federated Learning Client for Convolutional Autoencoder"""
 
-    def __init__(self, client_id: str, clean_dir: str, noisy_dir: str, server_url: str):
+    def __init__(self, client_id: str, clean_dir: str, noisy_dir: str, server_url: str,
+                 attack: str = None, attack_scale: float = None):
         """
         Initialize FL Client for CAE.
 
@@ -38,9 +68,14 @@ class FLClientCAE:
             clean_dir: Directory with clean images
             noisy_dir: Directory with noisy images
             server_url: FL server URL
+            attack: Optional malicious behaviour (one of ATTACKS), for testing the SL gate
+            attack_scale: Attack strength (default per attack: DEFAULT_ATTACK_SCALE)
         """
         self.client_id = client_id
         self.server_url = server_url
+        self.attack = attack
+        self.attack_scale = attack_scale if attack_scale is not None else DEFAULT_ATTACK_SCALE.get(attack)
+        self._submit_weights = None  # poisoned weights to send this round, if attacking
 
         logger.info(f"\n{'='*60}")
         logger.info(f"CAE FL CLIENT: {client_id.upper()}")
@@ -55,7 +90,8 @@ class FLClientCAE:
             clean_dir=clean_dir,
             noisy_dir=noisy_dir,
             img_size=config.AUTOENCODER_IMAGE_SIZE,
-            num_clients=config.NUM_CLIENTS
+            num_clients=config.NUM_CLIENTS,
+            cache=True,  # the same images are reread every round; decode them once
         )
 
         self.dataloader, self.num_samples = self.preprocessor.get_dataloader(
@@ -76,6 +112,8 @@ class FLClientCAE:
         logger.info(f"✓ Model loaded on {self.model.device}")
         logger.info(f"✓ Parameters: {self.model.count_parameters():,}")
         logger.info(f"✓ Latent dimension: {self.model.latent_dim}")
+        if attack:
+            logger.warning(f"⚠ MALICIOUS CLIENT: attack={attack}, scale={self.attack_scale}")
 
         self.current_round = 0
 
@@ -158,7 +196,10 @@ class FLClientCAE:
             pbar = tqdm(self.dataloader, desc=f"Epoch {epoch+1}/{epochs_per_round}")
 
             for noisy_batch, clean_batch in pbar:
-                loss = self.model.train_step(noisy_batch, clean_batch)
+                if self.attack == "inverted":
+                    loss = self.model.train_step(clean_batch, noisy_batch)
+                else:
+                    loss = self.model.train_step(noisy_batch, clean_batch)
 
                 epoch_loss += loss
                 batch_count += 1
@@ -194,7 +235,7 @@ class FLClientCAE:
 
         url = f"{self.server_url}/submit_update"
 
-        weights = self.model.get_weights()
+        weights = self._submit_weights if self._submit_weights is not None else self.model.get_weights()
         weights_bytes = pickle.dumps(weights)
         _debug(self.client_id, f"submit_update: posting {len(weights_bytes)} bytes")
         logger.info(f"  Weight payload: {len(weights_bytes):,} bytes")
@@ -262,33 +303,50 @@ class FLClientCAE:
                     await self.get_global_model(session, round_num)
 
                 # Train locally
+                start = {k: v.detach().clone() for k, v in self.model.get_weights().items()}
                 avg_loss = self.train_local_epoch(epochs_per_round=config.EPOCHS_PER_ROUND)
+                if self.attack in ("sign_flip", "scale", "noise"):
+                    self._submit_weights = poison_weights(
+                        self.attack, self.attack_scale, start, self.model.get_weights())
 
                 # Submit update to server
                 await self.submit_update(session, avg_loss)
-
-                await asyncio.sleep(1)
 
             logger.info(f"\n{'='*60}")
             logger.info(f"✓ {self.client_id.upper()} FINISHED - {num_rounds} ROUNDS")
             logger.info(f"{'='*60}\n")
 
 
+def set_torch_threads():
+    """Give each simulated client its share of the cores (see config.CLIENT_TORCH_THREADS)."""
+    threads = getattr(config, "CLIENT_TORCH_THREADS", None)
+    if threads == "auto":
+        threads = max(1, (os.cpu_count() or 1) // config.NUM_CLIENTS)
+    if threads:
+        torch.set_num_threads(int(threads))
+        logger.info(f"Torch threads: {torch.get_num_threads()}")
+
+
 def main():
     import argparse
+    set_torch_threads()
     parser = argparse.ArgumentParser()
     parser.add_argument("--client-id", required=True, help="Client ID (e.g., client_1)")
     parser.add_argument("--clean-dir", required=True, help="Directory with clean images")
     parser.add_argument("--noisy-dir", required=True, help="Directory with noisy images")
     parser.add_argument("--server-url", required=True, help="FL server URL")
     parser.add_argument("--num-rounds", type=int, default=10, help="Number of FL rounds")
+    parser.add_argument("--attack", choices=ATTACKS, default=None, help="Make this client malicious (SL gate testing)")
+    parser.add_argument("--attack-scale", type=float, default=None, help="Attack strength (default depends on --attack)")
     args = parser.parse_args()
 
     client = FLClientCAE(
         client_id=args.client_id,
         clean_dir=args.clean_dir,
         noisy_dir=args.noisy_dir,
-        server_url=args.server_url
+        server_url=args.server_url,
+        attack=args.attack,
+        attack_scale=args.attack_scale,
     )
 
     asyncio.run(client.run_federated_learning(num_rounds=args.num_rounds))

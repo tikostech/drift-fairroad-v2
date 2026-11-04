@@ -1,0 +1,21 @@
+\begin{table*}[!t]
+\centering
+\caption{Ablation of the comparison design (offline; original split: case base from 2 clean runs, held-out clean runs, original max$\times$1.25 calibration). Harmful = update scaling and $\sigma{=}2.0$ noise; ``all'' also includes attacks that do not degrade the model. Best per column in bold.}
+\label{tab:ablation}
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}lcccccccc@{}}
+\toprule
+& \multicolumn{2}{c}{\textbf{AUROC, all}} & \multicolumn{2}{c}{\textbf{AUROC, harmful}} & \multicolumn{2}{c}{\textbf{TPR, harmful}} & \multicolumn{2}{c}{\textbf{FPR, clean}} \\ \cmidrule(lr){2-3}\cmidrule(lr){4-5}\cmidrule(lr){6-7}\cmidrule(lr){8-9}
+\textbf{Variant} & Upd. & Ckpt. & Upd. & Ckpt. & Upd. & Ckpt. & Upd. & Ckpt. \\
+\midrule
+Round-agnostic, pooled images (PCA 32) & 0.81 & 0.75 & \textbf{1.00} & \textbf{0.96} & 0.85 & 0.52 & \textbf{0.00} & \textbf{0.00} \\
+Round-agnostic, per-image & 0.81 & \textbf{0.77} & \textbf{1.00} & \textbf{0.96} & 0.85 & 0.57 & \textbf{0.00} & \textbf{0.00} \\
+Round-aware, pooled images & 0.81 & 0.73 & 0.99 & 0.93 & \textbf{0.92} & \textbf{0.73} & \textbf{0.00} & \textbf{0.00} \\
+Round-aware, per-image, PCA 32 & \textbf{0.82} & 0.75 & 0.99 & 0.92 & 0.83 & 0.70 & \textbf{0.00} & \textbf{0.00} \\
+Round-aware, per-image$^\dagger$ & \textbf{0.82} & 0.74 & 0.99 & 0.92 & 0.88 & \textbf{0.73} & \textbf{0.00} & \textbf{0.00} \\
+\bottomrule
+\end{tabular}
+\\[2pt]
+\parbox{\textwidth}{\scriptsize $^\dagger$Comparison design used by every live gate version.}
+\end{table*}

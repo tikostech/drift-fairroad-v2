@@ -215,8 +215,8 @@ class CAEFederatedModel:
         return reconstructed
 
     def get_weights(self):
-        """Get model state dict for federated aggregation"""
-        return self.model.state_dict()
+        """Get model state dict for federated aggregation (CPU tensors, so it pickles and saves portably)"""
+        return {k: v.detach().cpu() for k, v in self.model.state_dict().items()}
 
     def set_weights(self, state_dict):
         """Set model weights from federated aggregation"""

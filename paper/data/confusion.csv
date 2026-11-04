@@ -1,0 +1,5 @@
+scope,kind,tp,fn,fp,tn,downstream_excluded
+offline (capture runs; held-out valid),client_update,79,71,2,358,0
+live (gate v6),client_update,64,26,1,269,0
+offline (capture runs; held-out valid),checkpoint,65,85,0,140,0
+live (gate v6),checkpoint,0,26,0,94,0

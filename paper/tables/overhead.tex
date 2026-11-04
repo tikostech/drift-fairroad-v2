@@ -1,0 +1,20 @@
+\begin{table}[!t]
+\centering
+\caption{Server-side overhead of tracing and gating (GPU).}
+\label{tab:overhead}
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}ll@{}}
+\toprule
+\textbf{Quantity} & \textbf{Value} \\
+\midrule
+Trace time per model (median / mean / p95)$^\ast$ & 0.05 / 0.06 / 0.09 s \\
+Models traced per round & 4 (3 updates + 1 checkpoint) \\
+Mean FL round duration (traced runs) & 0.5 s \\
+Case base size & 14.6 MB (16{,}000 cases $\times$ 94 features) \\
+Models traced in the scored runs & 1{,}080 \\
+\bottomrule
+\end{tabular}
+\\[2pt]
+\parbox{\columnwidth}{\scriptsize $^\ast$Measured on GPU (NVIDIA GeForce RTX 4070 Laptop GPU), PyTorch 2.14.1+cu130.}
+\end{table}

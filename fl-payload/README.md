@@ -200,10 +200,66 @@ Human-readable summary with all key metrics.
 - `--rounds R1 R2 ...` - Specific rounds to evaluate (default: all)
 - `--no-client-eval` - Skip per-client evaluation (faster)
 - `--save-reconstructions` - Save sample reconstruction images
+- `--sl-features` - Save SynapsesLogger-minimised activation features (`sl_features.npz`); `--sl-scope role|net`, `--sl-bands N`
 
 ### `run_fl_cae_system.py`
 
 - `--num-rounds N` - Number of FL rounds (default: 10)
+- `--checkpoint-dir DIR` - Where the server writes checkpoints, traces and the gate log (default: `checkpoints`)
+- `--sl-traces` - Archive SL traces of every client update and checkpoint
+- `--sl-case-base PATH` - Gate models against this case base; `--sl-gate-mode enforce|audit`, `--sl-gate-scope both|checkpoint|clients`
+- `--attack sign_flip|scale|noise|inverted` - Make `--malicious-client` (default `client_3`) poison its updates; `--attack-scale X`
+- `--absent-client CLIENT_ID` - Do not start this client (valid client dropout, e.g. for the case base); repeatable
+- `--no-final-eval` - Skip evaluating the last checkpoint after training (~40 s per run; use for batch experiments)
+
+---
+
+## SL Gate (spoofed checkpoint detection)
+
+The server can trace every model it receives and gate it against a case base of valid models
+(`sl_gate.py`, adapted from tikos.profiler.cyber.training's one-class CBR pieces).
+
+1. **Trace.** Each client update and each averaged checkpoint is loaded into a scratch CAE and run
+   over `SL_PROBE_IMAGES` fixed probe images. `sl_probe_cae.py` turns each image's activations into
+   98 SL-minimised features (`sc/slmin/sl_minimize.py`). One probe image's trace is one case.
+2. **Case base.** Built from valid runs only: clean runs plus client-dropout runs (one client absent),
+   because when the gate excludes a client the global model becomes an average over fewer clients.
+   A model at training progress r (accepted checkpoints + 1, which equals the round number unless
+   rounds were rejected) is compared with valid cases from rounds r±1, probe image by probe image
+   (mean distance to the 5 nearest), plus per-feature tolerance coverage.
+3. **Calibration.** Held-out valid scores come from leaving whole runs out. `pooled` calibration (default)
+   normalises them by each round's median and takes one quantile over all rounds, so a single unusual
+   valid model cannot inflate a round's threshold. `--target-fpr` picks the quantile and margin from
+   valid runs only (leave-one-run-out false-positive rate). Low feature coverage can also be a reason to
+   reject (`--coverage-rule`); alone it mostly flags honest models, but with the rejection budget it adds
+   sign-flip detection at little cost.
+4. **Gate.** In `enforce` mode a round's client updates are decided together once all have arrived:
+   at most `--sl-max-rejections` (default: fewer than half the clients) are excluded from the average,
+   most anomalous first. An invalid checkpoint is saved as `server_round_N.rejected.pt` and the previous
+   global model is kept (and saved as `server_round_N.pt`); round-1 checkpoints are traced but not gated
+   (`--sl-checkpoint-warmup`), and after one rejected checkpoint the next is admitted
+   (`--sl-checkpoint-stall-guard`), since repeated rejection without progress is drift and would stall
+   training. `--sl-gate-scope clients` traces checkpoints without gating them. `audit` mode only records verdicts. Each decision, with its nearest valid
+   models, out-of-tolerance features and any budget/warm-up note, goes to `sl_gate_log.jsonl`.
+
+```bash
+# 1. Capture traces from valid runs: several clean runs, plus runs with each client absent in turn
+python run_fl_cae_system.py --checkpoint-dir sl_runs/clean_a --sl-traces
+python run_fl_cae_system.py --checkpoint-dir sl_runs/base_dropout_c1_s1 --sl-traces --absent-client client_1
+
+# 2. Build the case base, choosing the operating point for a 0.5% held-out false-positive rate
+python build_sl_case_base.py --runs sl_runs/clean_* sl_runs/base_dropout_* --out sl_runs/case_base_v2.npz --target-fpr 0.005
+
+# 3. Train with the gate on (here against a malicious client)
+python run_fl_cae_system.py --checkpoint-dir sl_runs/gated --sl-case-base sl_runs/case_base_v2.npz --attack scale
+
+# 4. Score runs offline (labels come from each run's run_meta.json); compare live-gate versions
+python eval_sl_gate.py --case-base sl_runs/case_base_v2.npz --runs sl_runs/gated sl_runs/attack_*
+python compare_live_gates.py
+```
+
+The case base records the feature schema and the probe set's hash; the server refuses to start
+with a case base that doesn't match.
 
 ---
 
