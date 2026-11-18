@@ -25,8 +25,8 @@ DEAD = "http://127.0.0.1:9"  # discard port: nothing listens
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--sl", default="http://localhost:8601")
-    ap.add_argument("--cbr", default="http://localhost:8602")
+    ap.add_argument("--sl", default=os.environ.get("SL_SERVICE_URL") or "http://127.0.0.1:8601")
+    ap.add_argument("--cbr", default=os.environ.get("CBR_SERVICE_URL") or "http://127.0.0.1:8602")
     ap.add_argument("--api-key", default=os.environ.get("IP_SERVICE_API_KEY"))
     ap.add_argument("--case-base", default="case_base_v2")
     args = ap.parse_args()

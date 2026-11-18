@@ -34,10 +34,7 @@ COPY --from=builder /usr/local/bin /usr/local/bin
 COPY fl-payload/*.py ./
 COPY fl-payload/models/ models/
 # The IP (SL probe, CBR gate, sc) is not in this image -- it runs in the drift-fairroad-service image
-# and the server reaches it through ip_client. The research scripts that need the
-# core in-process are left out too, and the build fails if any IP definition gets in.
-RUN rm -f ip_core.py build_sl_case_base.py eval_sl_gate.py explain_sl_decision.py \
-          compare_live_gates.py demo_sl_gate.py sl_demo_page.py make_paper_assets.py
+# and the server reaches it through ip_client. The build fails if any IP definition gets in.
 COPY ip_client/ ip_client/
 RUN if grep -rqE "^(class|def) (SLCaseBase|ModelTracer|CAESLProbe|SLMinProbe|ActivationProbe|SynapsesLoggerV49|SequentialCollection|minimize|batch_layer_stats|_layer_stats|build_case_base|load_probe_images)\b" /app; then \
         echo "IP code found in the FL image" >&2; exit 1; fi

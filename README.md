@@ -75,7 +75,10 @@ and the `sc` package (SynapsesLogger, SequentialCollection) live in the **`drift
 repo, checked out next to this one, and run as two web services. This repo holds no IP:
 
 - The FL server reaches the services through `ip_client/` (`--sl-service-url` / `--cbr-service-url`).
-- fl-payload's research tools find the sibling checkout through `fl-payload/ip_core.py`.
+- Tracing and gating need the services, by default on `http://127.0.0.1:8601` (SL) and
+  `http://127.0.0.1:8602` (CBR) (`fl-payload/config.py`). There is no in-process fallback.
+- The SL gate's research tools, run data and paper moved there too (`research/`, `paper/`). The live
+  demo (`fl-payload/demo_sl_gate.py`) stays here: it gates through the services.
 - `python -m integration_tests.check_no_ip` makes sure no IP gets back in.
 ---
 

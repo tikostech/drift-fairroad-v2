@@ -16,6 +16,9 @@ Drop-in replacements for the in-process objects the FL server uses::
     RemoteModelTracer(sl)            ~ sl_gate.ModelTracer   (.trace(state_dict), .names, .probe_hash)
     RemoteCaseBase(cbr, "name")      ~ sl_gate.SLCaseBase    (.decide(Z, round), .check_compatible, .meta)
 
+The key is ``api_key=``, else ``$IP_SERVICE_API_KEY``, else ``DEFAULT_API_KEY`` -- the services' own
+default, so an unconfigured local setup works. Pass ``api_key=""`` to send no key.
+
 Transient failures (connection errors, 502/503/504) are retried with backoff and then raised as
 ``ServiceUnavailable``; anything the service rejects is raised as ``ServiceError`` with its status
 and error code.
@@ -32,7 +35,11 @@ import numpy as np
 import requests
 
 __all__ = ["ServiceError", "ServiceUnavailable", "SLServiceClient", "CBRServiceClient",
-           "RemoteModelTracer", "RemoteCaseBase"]
+           "RemoteModelTracer", "RemoteCaseBase", "DEFAULT_API_KEY", "DEFAULT_ADMIN_KEY"]
+
+# The services' keys when IP_SERVICE_API_KEY / IP_SERVICE_ADMIN_KEY are unset (ip_services/common.py).
+DEFAULT_API_KEY = "ipsev001"
+DEFAULT_ADMIN_KEY = "ipsev001ADMIN"
 
 RETRY_STATUS = (502, 503, 504)
 
@@ -53,7 +60,7 @@ class _Http:
         self.base = base_url.rstrip("/")
         self.timeout, self.retries, self.backoff = timeout, retries, backoff
         self.session = requests.Session()
-        key = api_key if api_key is not None else os.environ.get("IP_SERVICE_API_KEY")
+        key = api_key if api_key is not None else (os.environ.get("IP_SERVICE_API_KEY") or DEFAULT_API_KEY)
         if key:
             self.session.headers["X-API-Key"] = key
 

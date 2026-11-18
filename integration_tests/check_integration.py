@@ -31,15 +31,15 @@ sys.path[:0] = [FL_PAYLOAD, REPO_ROOT]
 from ip_client import CBRServiceClient, SLServiceClient  # noqa: E402
 from trace_store import load_run  # noqa: E402
 
-# What the measured gate catches reliably (see paper/REPORT.md): scale and noise attacks; sign-flip and
+# What the measured gate catches reliably (see drift-fairroad-service paper/REPORT.md): scale and noise attacks; sign-flip and
 # inverted training barely harm the model and mostly pass, so no minimum is asserted for them.
 DEFAULT_MIN_ATTACKER = {"scale": 0.8, "noise": 0.5}
 
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--sl", default="http://localhost:8601")
-    ap.add_argument("--cbr", default="http://localhost:8602")
+    ap.add_argument("--sl", default=os.environ.get("SL_SERVICE_URL") or "http://127.0.0.1:8601")
+    ap.add_argument("--cbr", default=os.environ.get("CBR_SERVICE_URL") or "http://127.0.0.1:8602")
     ap.add_argument("--api-key", default=os.environ.get("IP_SERVICE_API_KEY"))
     ap.add_argument("--case-base", default="case_base_v2", help="Case base name on the CBR service")
     ap.add_argument("--scope", choices=["both", "checkpoint", "clients"], default="clients")

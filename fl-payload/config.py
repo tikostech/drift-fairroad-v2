@@ -128,6 +128,14 @@ PLOT_DIR = 'plots'
 # Changing this invalidates existing case bases (they record the probe set's hash).
 SL_PROBE_IMAGES = 32
 
+# Default addresses of the IP services (drift-fairroad-service). Used by fl_server.py,
+# run_fl_cae_system.py, demo_sl_gate.py and integration_tests when no URL is given; the
+# SL_SERVICE_URL / CBR_SERVICE_URL environment variables override them.
+# SL_SERVICE_URL = "http://127.0.0.1:8601"
+# CBR_SERVICE_URL = "http://127.0.0.1:8602"
+SL_SERVICE_URL = "https://df-sl-service-v1-202913395965.europe-west2.run.app"
+CBR_SERVICE_URL = "https://df-cbr-service-v1-202913395965.europe-west2.run.app"
+
 # ============================================================================
 # COMPUTED PARAMETERS (Don't modify)
 # ============================================================================

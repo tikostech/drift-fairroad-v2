@@ -3,7 +3,9 @@ This repo carries no IP: the probes, gates and CBR live in drift-fairroad-servic
 
   1. no IP definition (top-level class/def of the probes, gate, CBR, SL minimisation) in any source file
   2. no compiled bytecode of an IP module (a tracked .pyc is the IP in another form)
-  3. no IP package directories (sc/, ip_services/)
+  3. no IP package directories (sc/, ip_services/) or files: the in-process bridge and the SL gate research
+     tools, and IP data -- run directories, case bases, trace archives, SL features, the SL gate paper
+     (all in drift-fairroad-service: ip_services/core, research/, paper/)
   4. ip_client/ is the vendored copy recorded in ip_client/VENDORED.txt, and matches the service repo's
      (when ../drift-fairroad-service is checked out)
 
@@ -12,6 +14,7 @@ This repo carries no IP: the probes, gates and CBR live in drift-fairroad-servic
 import hashlib
 import os
 import re
+import subprocess
 import sys
 
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -28,6 +31,16 @@ IP_DEFS = ("SLCaseBase", "ModelTracer", "CAESLProbe", "SLMinProbe", "SLMinBatchP
 DEF_RE = re.compile(rf"^(class|def) ({'|'.join(IP_DEFS)})\b", re.M)
 IP_MODULES = re.compile(r"^(sl_gate|sl_probe_cae|case_base_builder|sl_minimize|activation_probe|SynapsesLogger\w*|"
                         r"SequentialCollection\w*|ModelSpec)\.", re.I)
+# Moved to drift-fairroad-service (research/, paper/); none may come back.
+IP_FILES = ("fl-payload/ip_core.py", "fl-payload/build_sl_case_base.py", "fl-payload/eval_sl_gate.py",
+            "fl-payload/explain_sl_decision.py", "fl-payload/compare_live_gates.py", "fl-payload/sl_demo_page.py",
+            "fl-payload/make_paper_assets.py", "fl-payload/sl_runs", "fl-payload/sl_runs_gpu", "fl-payload/sl_runs_demo",
+            "paper")
+# (demo_sl_gate.py and demo_page.py stay here: they gate through the services and render the CBR service's
+# decisions, with no IP.)
+# Tracked IP data: case bases, trace archives, SL features, gate logs. (A run's checkpoint dir gets
+# sl_traces.npz and sl_gate_log.jsonl from the services; they're run outputs and stay untracked here.)
+IP_DATA = re.compile(r"(^|/)(case_base[^/]*\.npz|sl_traces[^/]*\.npz|sl_features[^/]*\.npz|sl_gate_log[^/]*\.jsonl)$")
 SKIP_DIRS = {".git", ".venv", ".venv-gpu", "data", "paper", ".idea", ".claude", "node_modules"}
 
 
@@ -57,10 +70,13 @@ def main():
     print("   none" if not pyc else "\n".join(f"   FOUND {p}" for p in pyc))
     ok &= not pyc
 
-    print("3. IP package directories")
-    dirs = [d for d in ("sc", "ip_services") if os.path.isdir(os.path.join(REPO_ROOT, d))]
-    print("   none" if not dirs else "\n".join(f"   FOUND {d}/" for d in dirs))
-    ok &= not dirs
+    print("3. IP packages, files and data")
+    found = [f"{d}/" for d in ("sc", "ip_services") if os.path.isdir(os.path.join(REPO_ROOT, d))]
+    found += [f for f in IP_FILES if os.path.exists(os.path.join(REPO_ROOT, f))]
+    tracked = subprocess.run(["git", "ls-files"], cwd=REPO_ROOT, capture_output=True, text=True).stdout.splitlines()
+    found += [f"{f} (tracked)" for f in tracked if IP_DATA.search(f)]
+    print("   none" if not found else "\n".join(f"   FOUND {f}" for f in found))
+    ok &= not found
 
     print("4. vendored ip_client")
     mine = os.path.join(REPO_ROOT, "ip_client", "__init__.py")

@@ -2,4 +2,4 @@
 # the service repo, copy it over, and update the hash below. integration_tests/check_no_ip.py checks it.
 # The client holds no IP: it serialises weights/traces and calls the SL and CBR services over HTTP.
 # 2026-11-18  source: drift-fairroad-service (not yet committed)
-48b1337719b19022e62716b190920ad9687e6d4c8dd6916ad791b133af2fcffd  __init__.py
+c9444b2105e51f17be5117e0c29cd9c6298456c13add88a4bd6f351be37796cf  __init__.py

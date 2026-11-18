@@ -1,1055 +1,0 @@
-======================================================================
-FEDERATED LEARNING SYSTEM CONFIGURATION
-======================================================================
-
-TASK: AUTOENCODER
-
-MODEL:
-  Model: models.cae_model_small.CAEFederatedModel
-  Latent Dimension: 32
-  Learning Rate: 0.001
-
-DATA:
-  Clean Images: ../data/payload/images/clean
-  Noisy Images: ../data/payload/images/noise
-  Image Size: 224x224
-  Epochs per Round: 1
-
-FEDERATED LEARNING:
-  Server: localhost:5544
-  Clients: 3
-  Min Clients: 2
-  Client stagger: 10s per client index
-  Aggregation: fedavg
-
-TRAINING:
-  Learning Rate: 0.001
-  Batch Size: 32
-
-OUTPUT:
-  Checkpoints: checkpoints/
-======================================================================
-
-======================================================================
-STARTING FEDERATED LEARNING SYSTEM
-======================================================================
-
-🚀 Starting FL Server on localhost:5544...
-✓ Server started (PID: 16344)
-
-Waiting for server to start...
-Waiting for server... (0/30)
-2026-10-02 16:54:05,366 - [__main__] - Loading model from models.cae_model_small.CAEFederatedModel
-2026-10-02 16:54:06,586 - [__main__] - Model parameters: 757011
-2026-10-02 16:54:07,058 - [__main__] - SL tracing on: 32 probe images from ../data/payload/images/noise
-2026-10-02 16:54:07,059 - [__main__] - Server initialized with fedavg aggregation
-2026-10-02 16:54:07,059 - [__main__] - Starting FL Server on 127.0.0.1:5544
-2026-10-02 16:54:07,315 - [aiohttp.access] - 127.0.0.1 [02/Oct/2026:15:54:07 +0000] "GET /status HTTP/1.1" 200 280 "-" "python-requests/2.32.5"
-✓ Server is ready at http://localhost:5544/status
-
-🚀 Starting 3 FL Clients...
-
-   Starting client_1...
-   Starting client_2...
-   Starting client_3...
-
-✓ All 3 clients started!
-
-======================================================================
-MONITORING TRAINING PROGRESS
-======================================================================
-(Updates shown when rounds complete)
-
-INFO:__main__:
-============================================================
-INFO:__main__:
-============================================================
-INFO:__main__:CAE FL CLIENT: CLIENT_3
-INFO:__main__:CAE FL CLIENT: CLIENT_1
-INFO:__main__:============================================================
-INFO:__main__:============================================================
-INFO:__main__:Loading image pairs for this client...
-INFO:__main__:Loading image pairs for this client...
-INFO:__main__:
-============================================================
-INFO:__main__:CAE FL CLIENT: CLIENT_2
-INFO:__main__:============================================================
-INFO:__main__:Loading image pairs for this client...
-INFO:data_preprocessing_cae:Loaded 502 clean/noisy image pairs
-INFO:data_preprocessing_cae:Loaded 502 clean/noisy image pairs
-INFO:data_preprocessing_cae:Client 2: 168 image pairs (indices 334-502)
-INFO:data_preprocessing_cae:Client 0: 167 image pairs (indices 0-167)
-INFO:__main__:✓ Assigned 168 image pairs to client_3
-INFO:__main__:✓ Batches per epoch: 6
-INFO:__main__:✓ Assigned 167 image pairs to client_1
-INFO:__main__:
-Loading CAE model...
-INFO:__main__:✓ Batches per epoch: 6
-INFO:__main__:
-Loading CAE model...
-INFO:data_preprocessing_cae:Loaded 502 clean/noisy image pairs
-INFO:data_preprocessing_cae:Client 1: 167 image pairs (indices 167-334)
-INFO:__main__:✓ Assigned 167 image pairs to client_2
-INFO:__main__:✓ Batches per epoch: 6
-INFO:__main__:
-Loading CAE model...
-INFO:__main__:✓ Model loaded on cpu
-INFO:__main__:✓ Model loaded on cpu
-INFO:__main__:✓ Parameters: 757,011
-INFO:__main__:✓ Latent dimension: 32
-INFO:__main__:✓ Parameters: 757,011
-WARNING:__main__:⚠ MALICIOUS CLIENT: attack=noise, scale=2.0
-INFO:__main__:✓ Latent dimension: 32
-INFO:__main__:✓ Model loaded on cpu
-INFO:__main__:✓ Parameters: 757,011
-INFO:__main__:✓ Latent dimension: 32
-2026-10-02 16:54:13,157 - [__main__] - client_3 registered (1/3)
-2026-10-02 16:54:13,157 - [aiohttp.access] - 127.0.0.1 [02/Oct/2026:15:54:13 +0000] "POST /register HTTP/1.1" 200 261 "-" "Python/3.12 aiohttp/3.13.1"
-2026-10-02 16:54:13,158 - [__main__] - client_2 registered (2/3)
-2026-10-02 16:54:13,158 - [__main__] - ✓ Minimum 2 clients registered. Training can start!
-INFO:__main__:
-✓ 1/3 clients registered
-2026-10-02 16:54:13,158 - [aiohttp.access] - 127.0.0.1 [02/Oct/2026:15:54:13 +0000] "POST /register HTTP/1.1" 200 260 "-" "Python/3.12 aiohttp/3.13.1"
-2026-10-02 16:54:13,158 - [__main__] - client_1 registered (3/3)
-INFO:__main__:
-✓ 2/3 clients registered
-2026-10-02 16:54:13,158 - [aiohttp.access] - 127.0.0.1 [02/Oct/2026:15:54:13 +0000] "POST /register HTTP/1.1" 200 260 "-" "Python/3.12 aiohttp/3.13.1"
-INFO:__main__:
-✓ 3/3 clients registered
-2026-10-02 16:54:13,387 - [aiohttp.access] - 127.0.0.1 [02/Oct/2026:15:54:13 +0000] "GET /status HTTP/1.1" 200 280 "-" "python-requests/2.32.5"
-✓ Round 0 complete - Clients: 0/3, Strategy: fedavg
-INFO:__main__:Staggering start by 10s to avoid simultaneous model requests...
-INFO:__main__:
-############################################################
-INFO:__main__:Staggering start by 20s to avoid simultaneous model requests...
-INFO:__main__:# FEDERATED ROUND 1/10
-INFO:__main__:############################################################
-INFO:__main__:
-============================================================
-INFO:__main__:LOCAL TRAINING - ROUND 1
-INFO:__main__:============================================================
-Epoch 1/1:   0%|          | 0/6 [00:00<?, ?it/s]C:\Users\donli\AppData\Roaming\Python\Python312\site-packages\torch\utils\data\dataloader.py:759: UserWarning: 'pin_memory' argument is set as true but no accelerator is found, then device pinned memory won't be used.
-  super().__init__(loader)
-Epoch 1/1:   0%|          | 0/6 [00:00<?, ?it/s, loss=0.066884]Epoch 1/1:  17%|█▋        | 1/6 [00:00<00:02,  1.67it/s, loss=0.066884]2026-10-02 16:54:17,410 - [aiohttp.access] - 127.0.0.1 [02/Oct/2026:15:54:17 +0000] "GET /status HTTP/1.1" 200 280 "-" "python-requests/2.32.5"
-Epoch 1/1:  17%|█▋        | 1/6 [00:01<00:02,  1.67it/s, loss=0.059440]Epoch 1/1:  33%|███▎      | 2/6 [00:01<00:02,  1.55it/s, loss=0.059440]Epoch 1/1:  33%|███▎      | 2/6 [00:01<00:02,  1.55it/s, loss=0.063417]Epoch 1/1:  50%|█████     | 3/6 [00:01<00:01,  1.65it/s, loss=0.063417]Epoch 1/1:  50%|█████     | 3/6 [00:02<00:01,  1.65it/s, loss=0.077764]Epoch 1/1:  67%|██████▋   | 4/6 [00:02<00:01,  1.62it/s, loss=0.077764]Epoch 1/1:  67%|██████▋   | 4/6 [00:03<00:01,  1.62it/s, loss=0.073351]Epoch 1/1:  83%|████████▎ | 5/6 [00:03<00:00,  1.55it/s, loss=0.073351]Epoch 1/1:  83%|████████▎ | 5/6 [00:03<00:00,  1.55it/s, loss=0.060732]Epoch 1/1: 100%|██████████| 6/6 [00:03<00:00,  2.03it/s, loss=0.060732]Epoch 1/1: 100%|██████████| 6/6 [00:03<00:00,  1.78it/s, loss=0.060732]
-INFO:__main__:  Epoch 1 - Avg Loss: 0.066931
-INFO:__main__:
-============================================================
-INFO:__main__:TRAINING COMPLETE
-INFO:__main__:============================================================
-INFO:__main__:Average Loss: 0.066931
-INFO:__main__:Total Batches: 6
-INFO:__main__:
-→ Submitting model update...
-INFO:__main__:  Average loss: 0.066931
-INFO:__main__:  Weight payload: 3,036,102 bytes
-2026-10-02 16:54:20,434 - [__main__] - Update from client_1: Loss=0.066931 (1/3)
-2026-10-02 16:54:20,434 - [aiohttp.access] - 127.0.0.1 [02/Oct/2026:15:54:19 +0000] "POST /submit_update HTTP/1.1" 200 210 "-" "Python/3.12 aiohttp/3.13.1"
-INFO:__main__:✓ Update submitted: waiting
-INFO:__main__:
-############################################################
-INFO:__main__:# FEDERATED ROUND 2/10
-INFO:__main__:############################################################
-INFO:__main__:
-→ Requesting global model (round 1)... attempt 1/5
-2026-10-02 16:54:21,495 - [aiohttp.access] - 127.0.0.1 [02/Oct/2026:15:54:21 +0000] "GET /status HTTP/1.1" 200 280 "-" "python-requests/2.32.5"
-2026-10-02 16:54:25,535 - [aiohttp.access] - 127.0.0.1 [02/Oct/2026:15:54:25 +0000] "GET /status HTTP/1.1" 200 280 "-" "python-requests/2.32.5"
-INFO:__main__:
-############################################################
-INFO:__main__:# FEDERATED ROUND 1/10
-INFO:__main__:############################################################
-INFO:__main__:
-============================================================
-INFO:__main__:LOCAL TRAINING - ROUND 1
-INFO:__main__:============================================================
-Epoch 1/1:   0%|          | 0/6 [00:00<?, ?it/s]C:\Users\donli\AppData\Roaming\Python\Python312\site-packages\torch\utils\data\dataloader.py:759: UserWarning: 'pin_memory' argument is set as true but no accelerator is found, then device pinned memory won't be used.
-  super().__init__(loader)
-Epoch 1/1:   0%|          | 0/6 [00:00<?, ?it/s, loss=0.092382]Epoch 1/1:  17%|█▋        | 1/6 [00:00<00:04,  1.24it/s, loss=0.092382]Epoch 1/1:  17%|█▋        | 1/6 [00:01<00:04,  1.24it/s, loss=0.070385]Epoch 1/1:  33%|███▎      | 2/6 [00:01<00:03,  1.24it/s, loss=0.070385]Epoch 1/1:  33%|███▎      | 2/6 [00:02<00:03,  1.24it/s, loss=0.058168]Epoch 1/1:  50%|█████     | 3/6 [00:02<00:02,  1.18it/s, loss=0.058168]2026-10-02 16:54:29,569 - [aiohttp.access] - 127.0.0.1 [02/Oct/2026:15:54:29 +0000] "GET /status HTTP/1.1" 200 280 "-" "python-requests/2.32.5"
-Epoch 1/1:  50%|█████     | 3/6 [00:03<00:02,  1.18it/s, loss=0.087042]Epoch 1/1:  67%|██████▋   | 4/6 [00:03<00:01,  1.14it/s, loss=0.087042]Epoch 1/1:  67%|██████▋   | 4/6 [00:04<00:01,  1.14it/s, loss=0.081791]Epoch 1/1:  83%|████████▎ | 5/6 [00:04<00:00,  1.06it/s, loss=0.081791]Epoch 1/1:  83%|████████▎ | 5/6 [00:04<00:00,  1.06it/s, loss=0.068265]Epoch 1/1: 100%|██████████| 6/6 [00:04<00:00,  1.40it/s, loss=0.068265]Epoch 1/1: 100%|██████████| 6/6 [00:04<00:00,  1.26it/s, loss=0.068265]
-INFO:__main__:  Epoch 1 - Avg Loss: 0.076339
-INFO:__main__:
-============================================================
-INFO:__main__:TRAINING COMPLETE
-INFO:__main__:============================================================
-INFO:__main__:Average Loss: 0.076339
-INFO:__main__:Total Batches: 6
-INFO:__main__:
-→ Submitting model update...
-INFO:__main__:  Average loss: 0.076339
-INFO:__main__:  Weight payload: 3,036,102 bytes
-2026-10-02 16:54:32,021 - [__main__] - Update from client_2: Loss=0.076339 (2/3)
-2026-10-02 16:54:32,022 - [aiohttp.access] - 127.0.0.1 [02/Oct/2026:15:54:31 +0000] "POST /submit_update HTTP/1.1" 200 210 "-" "Python/3.12 aiohttp/3.13.1"
-INFO:__main__:✓ Update submitted: waiting
-INFO:__main__:
-############################################################
-INFO:__main__:# FEDERATED ROUND 2/10
-INFO:__main__:############################################################
-INFO:__main__:
-→ Requesting global model (round 1)... attempt 1/5
-2026-10-02 16:54:33,620 - [aiohttp.access] - 127.0.0.1 [02/Oct/2026:15:54:33 +0000] "GET /status HTTP/1.1" 200 280 "-" "python-requests/2.32.5"
-INFO:__main__:
-############################################################
-INFO:__main__:# FEDERATED ROUND 1/10
-INFO:__main__:############################################################
-INFO:__main__:
-============================================================
-INFO:__main__:LOCAL TRAINING - ROUND 1
-INFO:__main__:============================================================
-Epoch 1/1:   0%|          | 0/6 [00:00<?, ?it/s]C:\Users\donli\AppData\Roaming\Python\Python312\site-packages\torch\utils\data\dataloader.py:759: UserWarning: 'pin_memory' argument is set as true but no accelerator is found, then device pinned memory won't be used.
-  super().__init__(loader)
-Epoch 1/1:   0%|          | 0/6 [00:00<?, ?it/s, loss=0.055950]Epoch 1/1:  17%|█▋        | 1/6 [00:00<00:03,  1.33it/s, loss=0.055950]2026-10-02 16:54:37,660 - [aiohttp.access] - 127.0.0.1 [02/Oct/2026:15:54:37 +0000] "GET /status HTTP/1.1" 200 280 "-" "python-requests/2.32.5"
-Epoch 1/1:  17%|█▋        | 1/6 [00:01<00:03,  1.33it/s, loss=0.053846]Epoch 1/1:  33%|███▎      | 2/6 [00:01<00:02,  1.35it/s, loss=0.053846]Epoch 1/1:  33%|███▎      | 2/6 [00:02<00:02,  1.35it/s, loss=0.062239]Epoch 1/1:  50%|█████     | 3/6 [00:02<00:02,  1.39it/s, loss=0.062239]Epoch 1/1:  50%|█████     | 3/6 [00:02<00:02,  1.39it/s, loss=0.065595]Epoch 1/1:  67%|██████▋   | 4/6 [00:02<00:01,  1.41it/s, loss=0.065595]Epoch 1/1:  67%|██████▋   | 4/6 [00:03<00:01,  1.41it/s, loss=0.057160]Epoch 1/1:  83%|████████▎ | 5/6 [00:03<00:00,  1.28it/s, loss=0.057160]Epoch 1/1:  83%|████████▎ | 5/6 [00:04<00:00,  1.28it/s, loss=0.068459]Epoch 1/1: 100%|██████████| 6/6 [00:04<00:00,  1.67it/s, loss=0.068459]Epoch 1/1: 100%|██████████| 6/6 [00:04<00:00,  1.49it/s, loss=0.068459]
-INFO:__main__:  Epoch 1 - Avg Loss: 0.060541
-INFO:__main__:
-============================================================
-INFO:__main__:TRAINING COMPLETE
-INFO:__main__:============================================================
-INFO:__main__:Average Loss: 0.060541
-INFO:__main__:Total Batches: 6
-INFO:__main__:
-→ Submitting model update...
-INFO:__main__:  Average loss: 0.060541
-INFO:__main__:  Weight payload: 3,035,744 bytes
-2026-10-02 16:54:41,430 - [__main__] - Update from client_3: Loss=0.060541 (3/3)
-2026-10-02 16:54:41,683 - [aiohttp.access] - 127.0.0.1 [02/Oct/2026:15:54:41 +0000] "GET /status HTTP/1.1" 200 280 "-" "python-requests/2.32.5"
-2026-10-02 16:54:42,302 - [__main__] - ✓ Round 1 complete - Avg Loss: 0.067937, Clients: 3
-2026-10-02 16:54:42,317 - [__main__] - Checkpoint saved: sl_runs/attack_noise_x2/server_round_1.pt
-2026-10-02 16:54:42,318 - [aiohttp.access] - 127.0.0.1 [02/Oct/2026:15:54:40 +0000] "POST /submit_update HTTP/1.1" 200 195 "-" "Python/3.12 aiohttp/3.13.1"
-INFO:__main__:✓ Update submitted: aggregated
-2026-10-02 16:54:42,631 - [aiohttp.access] - 127.0.0.1 [02/Oct/2026:15:54:21 +0000] "POST /get_model HTTP/1.1" 200 3036271 "-" "Python/3.12 aiohttp/3.13.1"
-INFO:__main__:✓ Received and loaded global model
-INFO:__main__:
-============================================================
-INFO:__main__:LOCAL TRAINING - ROUND 2
-INFO:__main__:============================================================
-Epoch 1/1:   0%|          | 0/6 [00:00<?, ?it/s]2026-10-02 16:54:43,129 - [aiohttp.access] - 127.0.0.1 [02/Oct/2026:15:54:33 +0000] "POST /get_model HTTP/1.1" 200 3036271 "-" "Python/3.12 aiohttp/3.13.1"
-INFO:__main__:✓ Received and loaded global model
-INFO:__main__:
-============================================================
-INFO:__main__:LOCAL TRAINING - ROUND 2
-INFO:__main__:============================================================
-Epoch 1/1:   0%|          | 0/6 [00:00<?, ?it/s]INFO:__main__:
-############################################################
-INFO:__main__:# FEDERATED ROUND 2/10
-INFO:__main__:############################################################
-INFO:__main__:
-→ Requesting global model (round 1)... attempt 1/5
-2026-10-02 16:54:43,335 - [aiohttp.access] - 127.0.0.1 [02/Oct/2026:15:54:43 +0000] "POST /get_model HTTP/1.1" 200 3036271 "-" "Python/3.12 aiohttp/3.13.1"
-Epoch 1/1:   0%|          | 0/6 [00:00<?, ?it/s, loss=0.058453]Epoch 1/1:  17%|█▋        | 1/6 [00:00<00:03,  1.42it/s, loss=0.058453]INFO:__main__:✓ Received and loaded global model
-INFO:__main__:
-============================================================
-INFO:__main__:LOCAL TRAINING - ROUND 2
-INFO:__main__:============================================================
-Epoch 1/1:   0%|          | 0/6 [00:00<?, ?it/s]Epoch 1/1:  17%|█▋        | 1/6 [00:01<00:03,  1.42it/s, loss=0.072643]Epoch 1/1:  33%|███▎      | 2/6 [00:01<00:03,  1.18it/s, loss=0.072643]Epoch 1/1:   0%|          | 0/6 [00:01<?, ?it/s, loss=0.056714]Epoch 1/1:  17%|█▋        | 1/6 [00:01<00:06,  1.24s/it, loss=0.056714]Epoch 1/1:   0%|          | 0/6 [00:01<?, ?it/s, loss=0.081215]Epoch 1/1:  17%|█▋        | 1/6 [00:01<00:07,  1.53s/it, loss=0.081215]Epoch 1/1:  33%|███▎      | 2/6 [00:02<00:03,  1.18it/s, loss=0.065891]Epoch 1/1:  50%|█████     | 3/6 [00:02<00:02,  1.05it/s, loss=0.065891]2026-10-02 16:54:45,742 - [aiohttp.access] - 127.0.0.1 [02/Oct/2026:15:54:45 +0000] "GET /status HTTP/1.1" 200 280 "-" "python-requests/2.32.5"
-✓ Round 1 complete - Clients: 0/3, Strategy: fedavg
-Epoch 1/1:  17%|█▋        | 1/6 [00:02<00:06,  1.24s/it, loss=0.063300]Epoch 1/1:  33%|███▎      | 2/6 [00:02<00:05,  1.28s/it, loss=0.063300]Epoch 1/1:  17%|█▋        | 1/6 [00:03<00:07,  1.53s/it, loss=0.064371]Epoch 1/1:  33%|███▎      | 2/6 [00:03<00:06,  1.56s/it, loss=0.064371]Epoch 1/1:  50%|█████     | 3/6 [00:03<00:02,  1.05it/s, loss=0.072040]Epoch 1/1:  67%|██████▋   | 4/6 [00:03<00:01,  1.00it/s, loss=0.072040]Epoch 1/1:  33%|███▎      | 2/6 [00:03<00:05,  1.28s/it, loss=0.060133]Epoch 1/1:  50%|█████     | 3/6 [00:03<00:03,  1.31s/it, loss=0.060133]Epoch 1/1:  67%|██████▋   | 4/6 [00:04<00:01,  1.00it/s, loss=0.059119]Epoch 1/1:  83%|████████▎ | 5/6 [00:04<00:01,  1.01s/it, loss=0.059119]Epoch 1/1:  83%|████████▎ | 5/6 [00:05<00:01,  1.01s/it, loss=0.082056]Epoch 1/1: 100%|██████████| 6/6 [00:05<00:00,  1.34it/s, loss=0.082056]Epoch 1/1: 100%|██████████| 6/6 [00:05<00:00,  1.19it/s, loss=0.082056]
-INFO:__main__:  Epoch 1 - Avg Loss: 0.068367
-INFO:__main__:
-============================================================
-INFO:__main__:TRAINING COMPLETE
-INFO:__main__:============================================================
-INFO:__main__:Average Loss: 0.068367
-INFO:__main__:Total Batches: 6
-INFO:__main__:
-→ Submitting model update...
-INFO:__main__:  Average loss: 0.068367
-INFO:__main__:  Weight payload: 3,036,102 bytes
-Epoch 1/1:  33%|███▎      | 2/6 [00:04<00:06,  1.56s/it, loss=0.071702]Epoch 1/1:  50%|█████     | 3/6 [00:04<00:04,  1.59s/it, loss=0.071702]Epoch 1/1:  50%|█████     | 3/6 [00:05<00:03,  1.31s/it, loss=0.057104]Epoch 1/1:  67%|██████▋   | 4/6 [00:05<00:02,  1.25s/it, loss=0.057104]2026-10-02 16:54:48,793 - [__main__] - Update from client_1: Loss=0.068367 (1/3)
-2026-10-02 16:54:48,793 - [aiohttp.access] - 127.0.0.1 [02/Oct/2026:15:54:47 +0000] "POST /submit_update HTTP/1.1" 200 210 "-" "Python/3.12 aiohttp/3.13.1"
-INFO:__main__:✓ Update submitted: waiting
-Epoch 1/1:  50%|█████     | 3/6 [00:06<00:04,  1.59s/it, loss=0.077754]Epoch 1/1:  67%|██████▋   | 4/6 [00:06<00:03,  1.53s/it, loss=0.077754]Epoch 1/1:  67%|██████▋   | 4/6 [00:06<00:02,  1.25s/it, loss=0.066100]Epoch 1/1:  83%|████████▎ | 5/6 [00:06<00:01,  1.20s/it, loss=0.066100]2026-10-02 16:54:49,792 - [aiohttp.access] - 127.0.0.1 [02/Oct/2026:15:54:49 +0000] "GET /status HTTP/1.1" 200 280 "-" "python-requests/2.32.5"
-INFO:__main__:
-############################################################
-INFO:__main__:# FEDERATED ROUND 3/10
-INFO:__main__:############################################################
-INFO:__main__:
-→ Requesting global model (round 2)... attempt 1/5
-Epoch 1/1:  83%|████████▎ | 5/6 [00:06<00:01,  1.20s/it, loss=0.064053]Epoch 1/1: 100%|██████████| 6/6 [00:06<00:00,  1.11it/s, loss=0.064053]Epoch 1/1: 100%|██████████| 6/6 [00:06<00:00,  1.08s/it, loss=0.064053]
-INFO:__main__:  Epoch 1 - Avg Loss: 0.061234
-INFO:__main__:
-============================================================
-INFO:__main__:TRAINING COMPLETE
-INFO:__main__:============================================================
-INFO:__main__:Average Loss: 0.061234
-INFO:__main__:Total Batches: 6
-INFO:__main__:
-→ Submitting model update...
-INFO:__main__:  Average loss: 0.061234
-INFO:__main__:  Weight payload: 3,035,744 bytes
-Epoch 1/1:  67%|██████▋   | 4/6 [00:07<00:03,  1.53s/it, loss=0.072113]Epoch 1/1:  83%|████████▎ | 5/6 [00:07<00:01,  1.46s/it, loss=0.072113]2026-10-02 16:54:50,836 - [__main__] - Update from client_3: Loss=0.061234 (2/3)
-2026-10-02 16:54:50,836 - [aiohttp.access] - 127.0.0.1 [02/Oct/2026:15:54:49 +0000] "POST /submit_update HTTP/1.1" 200 210 "-" "Python/3.12 aiohttp/3.13.1"
-INFO:__main__:✓ Update submitted: waiting
-Epoch 1/1:  83%|████████▎ | 5/6 [00:07<00:01,  1.46s/it, loss=0.105952]Epoch 1/1: 100%|██████████| 6/6 [00:07<00:00,  1.08s/it, loss=0.105952]Epoch 1/1: 100%|██████████| 6/6 [00:07<00:00,  1.31s/it, loss=0.105952]
-INFO:__main__:  Epoch 1 - Avg Loss: 0.078851
-INFO:__main__:
-============================================================
-INFO:__main__:TRAINING COMPLETE
-INFO:__main__:============================================================
-INFO:__main__:Average Loss: 0.078851
-INFO:__main__:Total Batches: 6
-INFO:__main__:
-→ Submitting model update...
-INFO:__main__:  Average loss: 0.078851
-INFO:__main__:  Weight payload: 3,036,102 bytes
-INFO:__main__:
-############################################################
-INFO:__main__:# FEDERATED ROUND 3/10
-INFO:__main__:############################################################
-INFO:__main__:
-→ Requesting global model (round 2)... attempt 1/5
-2026-10-02 16:54:51,935 - [__main__] - Update from client_2: Loss=0.078851 (3/3)
-2026-10-02 16:54:52,926 - [__main__] - ✓ Round 2 complete - Avg Loss: 0.069484, Clients: 3
-2026-10-02 16:54:52,931 - [__main__] - Checkpoint saved: sl_runs/attack_noise_x2/server_round_2.pt
-2026-10-02 16:54:52,932 - [aiohttp.access] - 127.0.0.1 [02/Oct/2026:15:54:51 +0000] "POST /submit_update HTTP/1.1" 200 195 "-" "Python/3.12 aiohttp/3.13.1"
-INFO:__main__:✓ Update submitted: aggregated
-✓ Round 2 complete - Clients: 0/3, Strategy: fedavg
-2026-10-02 16:54:53,830 - [aiohttp.access] - 127.0.0.1 [02/Oct/2026:15:54:53 +0000] "GET /status HTTP/1.1" 200 280 "-" "python-requests/2.32.5"
-2026-10-02 16:54:53,831 - [aiohttp.access] - 127.0.0.1 [02/Oct/2026:15:54:49 +0000] "POST /get_model HTTP/1.1" 200 3036271 "-" "Python/3.12 aiohttp/3.13.1"
-INFO:__main__:✓ Received and loaded global model
-INFO:__main__:
-============================================================
-INFO:__main__:LOCAL TRAINING - ROUND 3
-INFO:__main__:============================================================
-Epoch 1/1:   0%|          | 0/6 [00:00<?, ?it/s]2026-10-02 16:54:53,875 - [aiohttp.access] - 127.0.0.1 [02/Oct/2026:15:54:51 +0000] "POST /get_model HTTP/1.1" 200 3036271 "-" "Python/3.12 aiohttp/3.13.1"
-INFO:__main__:✓ Received and loaded global model
-INFO:__main__:
-============================================================
-INFO:__main__:LOCAL TRAINING - ROUND 3
-INFO:__main__:============================================================
-Epoch 1/1:   0%|          | 0/6 [00:00<?, ?it/s]INFO:__main__:
-############################################################
-INFO:__main__:# FEDERATED ROUND 3/10
-INFO:__main__:############################################################
-INFO:__main__:
-→ Requesting global model (round 2)... attempt 1/5
-2026-10-02 16:54:53,939 - [aiohttp.access] - 127.0.0.1 [02/Oct/2026:15:54:53 +0000] "POST /get_model HTTP/1.1" 200 3036271 "-" "Python/3.12 aiohttp/3.13.1"
-INFO:__main__:✓ Received and loaded global model
-INFO:__main__:
-============================================================
-INFO:__main__:LOCAL TRAINING - ROUND 3
-INFO:__main__:============================================================
-Epoch 1/1:   0%|          | 0/6 [00:00<?, ?it/s]Epoch 1/1:   0%|          | 0/6 [00:00<?, ?it/s, loss=0.064040]Epoch 1/1:  17%|█▋        | 1/6 [00:00<00:03,  1.35it/s, loss=0.064040]Epoch 1/1:   0%|          | 0/6 [00:00<?, ?it/s, loss=0.065678]Epoch 1/1:  17%|█▋        | 1/6 [00:00<00:03,  1.29it/s, loss=0.065678]Epoch 1/1:   0%|          | 0/6 [00:01<?, ?it/s, loss=0.068834]Epoch 1/1:  17%|█▋        | 1/6 [00:01<00:07,  1.41s/it, loss=0.068834]Epoch 1/1:  17%|█▋        | 1/6 [00:01<00:03,  1.35it/s, loss=0.056112]Epoch 1/1:  33%|███▎      | 2/6 [00:01<00:03,  1.12it/s, loss=0.056112]Epoch 1/1:  17%|█▋        | 1/6 [00:01<00:03,  1.29it/s, loss=0.061676]Epoch 1/1:  33%|███▎      | 2/6 [00:01<00:03,  1.06it/s, loss=0.061676]Epoch 1/1:  33%|███▎      | 2/6 [00:02<00:03,  1.12it/s, loss=0.070612]Epoch 1/1:  50%|█████     | 3/6 [00:02<00:02,  1.10it/s, loss=0.070612]Epoch 1/1:  33%|███▎      | 2/6 [00:02<00:03,  1.06it/s, loss=0.056640]Epoch 1/1:  50%|█████     | 3/6 [00:02<00:02,  1.06it/s, loss=0.056640]Epoch 1/1:  17%|█▋        | 1/6 [00:02<00:07,  1.41s/it, loss=0.087746]Epoch 1/1:  33%|███▎      | 2/6 [00:02<00:05,  1.48s/it, loss=0.087746]Epoch 1/1:  50%|█████     | 3/6 [00:03<00:02,  1.10it/s, loss=0.064254]Epoch 1/1:  67%|██████▋   | 4/6 [00:03<00:01,  1.05it/s, loss=0.064254]Epoch 1/1:  50%|█████     | 3/6 [00:03<00:02,  1.06it/s, loss=0.061756]Epoch 1/1:  67%|██████▋   | 4/6 [00:03<00:02,  1.01s/it, loss=0.061756]2026-10-02 16:54:57,859 - [aiohttp.access] - 127.0.0.1 [02/Oct/2026:15:54:57 +0000] "GET /status HTTP/1.1" 200 280 "-" "python-requests/2.32.5"
-Epoch 1/1:  33%|███▎      | 2/6 [00:04<00:05,  1.48s/it, loss=0.074461]Epoch 1/1:  50%|█████     | 3/6 [00:04<00:04,  1.53s/it, loss=0.074461]Epoch 1/1:  67%|██████▋   | 4/6 [00:04<00:01,  1.05it/s, loss=0.058151]Epoch 1/1:  83%|████████▎ | 5/6 [00:04<00:00,  1.00it/s, loss=0.058151]Epoch 1/1:  83%|████████▎ | 5/6 [00:05<00:00,  1.00it/s, loss=0.052934]Epoch 1/1: 100%|██████████| 6/6 [00:05<00:00,  1.32it/s, loss=0.052934]Epoch 1/1: 100%|██████████| 6/6 [00:05<00:00,  1.19it/s, loss=0.052934]
-INFO:__main__:  Epoch 1 - Avg Loss: 0.061017
-INFO:__main__:
-============================================================
-INFO:__main__:TRAINING COMPLETE
-INFO:__main__:============================================================
-INFO:__main__:Average Loss: 0.061017
-INFO:__main__:Total Batches: 6
-INFO:__main__:
-→ Submitting model update...
-INFO:__main__:  Average loss: 0.061017
-INFO:__main__:  Weight payload: 3,036,102 bytes
-Epoch 1/1:  67%|██████▋   | 4/6 [00:05<00:02,  1.01s/it, loss=0.052173]Epoch 1/1:  83%|████████▎ | 5/6 [00:05<00:01,  1.06s/it, loss=0.052173]Epoch 1/1:  83%|████████▎ | 5/6 [00:05<00:01,  1.06s/it, loss=0.052189]Epoch 1/1: 100%|██████████| 6/6 [00:05<00:00,  1.27it/s, loss=0.052189]Epoch 1/1: 100%|██████████| 6/6 [00:05<00:00,  1.13it/s, loss=0.052189]
-INFO:__main__:  Epoch 1 - Avg Loss: 0.058352
-INFO:__main__:
-============================================================
-INFO:__main__:TRAINING COMPLETE
-INFO:__main__:============================================================
-INFO:__main__:Average Loss: 0.058352
-INFO:__main__:Total Batches: 6
-INFO:__main__:
-→ Submitting model update...
-INFO:__main__:  Average loss: 0.058352
-INFO:__main__:  Weight payload: 3,035,744 bytes
-2026-10-02 16:54:59,897 - [__main__] - Update from client_1: Loss=0.061017 (1/3)
-2026-10-02 16:54:59,898 - [aiohttp.access] - 127.0.0.1 [02/Oct/2026:15:54:58 +0000] "POST /submit_update HTTP/1.1" 200 210 "-" "Python/3.12 aiohttp/3.13.1"
-INFO:__main__:✓ Update submitted: waiting
-Epoch 1/1:  50%|█████     | 3/6 [00:06<00:04,  1.53s/it, loss=0.060100]Epoch 1/1:  67%|██████▋   | 4/6 [00:06<00:03,  1.56s/it, loss=0.060100]INFO:__main__:
-############################################################
-INFO:__main__:# FEDERATED ROUND 4/10
-INFO:__main__:############################################################
-INFO:__main__:
-→ Requesting global model (round 3)... attempt 1/5
-2026-10-02 16:55:01,211 - [__main__] - Update from client_3: Loss=0.058352 (2/3)
-2026-10-02 16:55:01,211 - [aiohttp.access] - 127.0.0.1 [02/Oct/2026:15:54:59 +0000] "POST /submit_update HTTP/1.1" 200 210 "-" "Python/3.12 aiohttp/3.13.1"
-INFO:__main__:✓ Update submitted: waiting
-Epoch 1/1:  67%|██████▋   | 4/6 [00:07<00:03,  1.56s/it, loss=0.074894]Epoch 1/1:  83%|████████▎ | 5/6 [00:07<00:01,  1.49s/it, loss=0.074894]Epoch 1/1:  83%|████████▎ | 5/6 [00:07<00:01,  1.49s/it, loss=0.051851]Epoch 1/1: 100%|██████████| 6/6 [00:07<00:00,  1.07s/it, loss=0.051851]Epoch 1/1: 100%|██████████| 6/6 [00:07<00:00,  1.29s/it, loss=0.051851]
-INFO:__main__:  Epoch 1 - Avg Loss: 0.069648
-INFO:__main__:
-============================================================
-INFO:__main__:TRAINING COMPLETE
-INFO:__main__:============================================================
-INFO:__main__:Average Loss: 0.069648
-INFO:__main__:Total Batches: 6
-INFO:__main__:
-→ Submitting model update...
-INFO:__main__:  Average loss: 0.069648
-INFO:__main__:  Weight payload: 3,036,102 bytes
-2026-10-02 16:55:01,917 - [aiohttp.access] - 127.0.0.1 [02/Oct/2026:15:55:01 +0000] "GET /status HTTP/1.1" 200 280 "-" "python-requests/2.32.5"
-INFO:__main__:
-############################################################
-INFO:__main__:# FEDERATED ROUND 4/10
-INFO:__main__:############################################################
-INFO:__main__:
-→ Requesting global model (round 3)... attempt 1/5
-2026-10-02 16:55:02,892 - [__main__] - Update from client_2: Loss=0.069648 (3/3)
-2026-10-02 16:55:03,900 - [__main__] - ✓ Round 3 complete - Avg Loss: 0.063006, Clients: 3
-2026-10-02 16:55:03,904 - [__main__] - Checkpoint saved: sl_runs/attack_noise_x2/server_round_3.pt
-2026-10-02 16:55:03,905 - [aiohttp.access] - 127.0.0.1 [02/Oct/2026:15:55:01 +0000] "POST /submit_update HTTP/1.1" 200 195 "-" "Python/3.12 aiohttp/3.13.1"
-INFO:__main__:✓ Update submitted: aggregated
-2026-10-02 16:55:04,246 - [aiohttp.access] - 127.0.0.1 [02/Oct/2026:15:55:02 +0000] "POST /get_model HTTP/1.1" 200 3036271 "-" "Python/3.12 aiohttp/3.13.1"
-INFO:__main__:✓ Received and loaded global model
-INFO:__main__:
-============================================================
-INFO:__main__:LOCAL TRAINING - ROUND 4
-INFO:__main__:============================================================
-Epoch 1/1:   0%|          | 0/6 [00:00<?, ?it/s]2026-10-02 16:55:04,907 - [aiohttp.access] - 127.0.0.1 [02/Oct/2026:15:55:00 +0000] "POST /get_model HTTP/1.1" 200 3036271 "-" "Python/3.12 aiohttp/3.13.1"
-INFO:__main__:
-############################################################
-INFO:__main__:# FEDERATED ROUND 4/10
-INFO:__main__:############################################################
-INFO:__main__:
-→ Requesting global model (round 3)... attempt 1/5
-INFO:__main__:✓ Received and loaded global model
-INFO:__main__:
-============================================================
-INFO:__main__:LOCAL TRAINING - ROUND 4
-INFO:__main__:============================================================
-Epoch 1/1:   0%|          | 0/6 [00:00<?, ?it/s]2026-10-02 16:55:04,922 - [aiohttp.access] - 127.0.0.1 [02/Oct/2026:15:55:04 +0000] "POST /get_model HTTP/1.1" 200 3036271 "-" "Python/3.12 aiohttp/3.13.1"
-INFO:__main__:✓ Received and loaded global model
-INFO:__main__:
-============================================================
-INFO:__main__:LOCAL TRAINING - ROUND 4
-INFO:__main__:============================================================
-Epoch 1/1:   0%|          | 0/6 [00:00<?, ?it/s]Epoch 1/1:   0%|          | 0/6 [00:00<?, ?it/s, loss=0.065577]Epoch 1/1:  17%|█▋        | 1/6 [00:00<00:04,  1.07it/s, loss=0.065577]Epoch 1/1:   0%|          | 0/6 [00:01<?, ?it/s, loss=0.071286]Epoch 1/1:  17%|█▋        | 1/6 [00:01<00:05,  1.03s/it, loss=0.071286]2026-10-02 16:55:05,979 - [aiohttp.access] - 127.0.0.1 [02/Oct/2026:15:55:05 +0000] "GET /status HTTP/1.1" 200 280 "-" "python-requests/2.32.5"
-✓ Round 3 complete - Clients: 0/3, Strategy: fedavg
-Epoch 1/1:  17%|█▋        | 1/6 [00:01<00:04,  1.07it/s, loss=0.055612]Epoch 1/1:  33%|███▎      | 2/6 [00:01<00:03,  1.00it/s, loss=0.055612]Epoch 1/1:   0%|          | 0/6 [00:01<?, ?it/s, loss=0.069343]Epoch 1/1:  17%|█▋        | 1/6 [00:01<00:07,  1.56s/it, loss=0.069343]Epoch 1/1:  17%|█▋        | 1/6 [00:02<00:05,  1.03s/it, loss=0.065579]Epoch 1/1:  33%|███▎      | 2/6 [00:02<00:04,  1.05s/it, loss=0.065579]Epoch 1/1:  33%|███▎      | 2/6 [00:03<00:03,  1.00it/s, loss=0.061055]Epoch 1/1:  50%|█████     | 3/6 [00:03<00:03,  1.08s/it, loss=0.061055]Epoch 1/1:  17%|█▋        | 1/6 [00:03<00:07,  1.56s/it, loss=0.073943]Epoch 1/1:  33%|███▎      | 2/6 [00:03<00:06,  1.65s/it, loss=0.073943]Epoch 1/1:  33%|███▎      | 2/6 [00:03<00:04,  1.05s/it, loss=0.064357]Epoch 1/1:  50%|█████     | 3/6 [00:03<00:03,  1.13s/it, loss=0.064357]Epoch 1/1:  50%|█████     | 3/6 [00:04<00:03,  1.08s/it, loss=0.055727]Epoch 1/1:  67%|██████▋   | 4/6 [00:04<00:02,  1.16s/it, loss=0.055727]Epoch 1/1:  50%|█████     | 3/6 [00:04<00:03,  1.13s/it, loss=0.062841]Epoch 1/1:  67%|██████▋   | 4/6 [00:04<00:02,  1.12s/it, loss=0.062841]Epoch 1/1:  33%|███▎      | 2/6 [00:04<00:06,  1.65s/it, loss=0.075271]Epoch 1/1:  50%|█████     | 3/6 [00:04<00:04,  1.60s/it, loss=0.075271]Epoch 1/1:  67%|██████▋   | 4/6 [00:05<00:02,  1.16s/it, loss=0.052021]Epoch 1/1:  83%|████████▎ | 5/6 [00:05<00:01,  1.20s/it, loss=0.052021]2026-10-02 16:55:10,026 - [aiohttp.access] - 127.0.0.1 [02/Oct/2026:15:55:10 +0000] "GET /status HTTP/1.1" 200 280 "-" "python-requests/2.32.5"
-Epoch 1/1:  83%|████████▎ | 5/6 [00:06<00:01,  1.20s/it, loss=0.057219]Epoch 1/1: 100%|██████████| 6/6 [00:06<00:00,  1.06it/s, loss=0.057219]Epoch 1/1: 100%|██████████| 6/6 [00:06<00:00,  1.03s/it, loss=0.057219]
-INFO:__main__:  Epoch 1 - Avg Loss: 0.057869
-INFO:__main__:
-============================================================
-INFO:__main__:TRAINING COMPLETE
-INFO:__main__:============================================================
-INFO:__main__:Average Loss: 0.057869
-INFO:__main__:Total Batches: 6
-INFO:__main__:
-→ Submitting model update...
-INFO:__main__:  Average loss: 0.057869
-Epoch 1/1:  67%|██████▋   | 4/6 [00:05<00:02,  1.12s/it, loss=0.067828]Epoch 1/1:  83%|████████▎ | 5/6 [00:05<00:01,  1.11s/it, loss=0.067828]INFO:__main__:  Weight payload: 3,035,744 bytes
-Epoch 1/1:  83%|████████▎ | 5/6 [00:05<00:01,  1.11s/it, loss=0.040208]Epoch 1/1: 100%|██████████| 6/6 [00:05<00:00,  1.21it/s, loss=0.040208]Epoch 1/1: 100%|██████████| 6/6 [00:05<00:00,  1.04it/s, loss=0.040208]
-INFO:__main__:  Epoch 1 - Avg Loss: 0.062016
-INFO:__main__:
-============================================================
-INFO:__main__:TRAINING COMPLETE
-INFO:__main__:============================================================
-INFO:__main__:Average Loss: 0.062016
-INFO:__main__:Total Batches: 6
-INFO:__main__:
-→ Submitting model update...
-INFO:__main__:  Average loss: 0.062016
-INFO:__main__:  Weight payload: 3,036,102 bytes
-Epoch 1/1:  50%|█████     | 3/6 [00:06<00:04,  1.60s/it, loss=0.078134]Epoch 1/1:  67%|██████▋   | 4/6 [00:06<00:03,  1.58s/it, loss=0.078134]2026-10-02 16:55:11,494 - [__main__] - Update from client_3: Loss=0.057869 (1/3)
-2026-10-02 16:55:11,495 - [aiohttp.access] - 127.0.0.1 [02/Oct/2026:15:55:10 +0000] "POST /submit_update HTTP/1.1" 200 210 "-" "Python/3.12 aiohttp/3.13.1"
-INFO:__main__:✓ Update submitted: waiting
-INFO:__main__:
-############################################################
-INFO:__main__:# FEDERATED ROUND 5/10
-INFO:__main__:############################################################
-INFO:__main__:
-→ Requesting global model (round 4)... attempt 1/5
-2026-10-02 16:55:12,698 - [__main__] - Update from client_1: Loss=0.062016 (2/3)
-2026-10-02 16:55:12,699 - [aiohttp.access] - 127.0.0.1 [02/Oct/2026:15:55:10 +0000] "POST /submit_update HTTP/1.1" 200 210 "-" "Python/3.12 aiohttp/3.13.1"
-INFO:__main__:✓ Update submitted: waiting
-Epoch 1/1:  67%|██████▋   | 4/6 [00:07<00:03,  1.58s/it, loss=0.068442]Epoch 1/1:  83%|████████▎ | 5/6 [00:07<00:01,  1.55s/it, loss=0.068442]Epoch 1/1:  83%|████████▎ | 5/6 [00:08<00:01,  1.55s/it, loss=0.061727]Epoch 1/1: 100%|██████████| 6/6 [00:08<00:00,  1.12s/it, loss=0.061727]Epoch 1/1: 100%|██████████| 6/6 [00:08<00:00,  1.36s/it, loss=0.061727]
-INFO:__main__:  Epoch 1 - Avg Loss: 0.071144
-INFO:__main__:
-============================================================
-INFO:__main__:TRAINING COMPLETE
-INFO:__main__:============================================================
-INFO:__main__:Average Loss: 0.071144
-INFO:__main__:Total Batches: 6
-INFO:__main__:
-→ Submitting model update...
-INFO:__main__:  Average loss: 0.071144
-INFO:__main__:  Weight payload: 3,036,102 bytes
-INFO:__main__:
-############################################################
-INFO:__main__:# FEDERATED ROUND 5/10
-INFO:__main__:############################################################
-INFO:__main__:
-→ Requesting global model (round 4)... attempt 1/5
-2026-10-02 16:55:14,063 - [aiohttp.access] - 127.0.0.1 [02/Oct/2026:15:55:14 +0000] "GET /status HTTP/1.1" 200 280 "-" "python-requests/2.32.5"
-2026-10-02 16:55:14,146 - [__main__] - Update from client_2: Loss=0.071144 (3/3)
-2026-10-02 16:55:15,190 - [__main__] - ✓ Round 4 complete - Avg Loss: 0.063676, Clients: 3
-2026-10-02 16:55:15,195 - [__main__] - Checkpoint saved: sl_runs/attack_noise_x2/server_round_4.pt
-2026-10-02 16:55:15,196 - [aiohttp.access] - 127.0.0.1 [02/Oct/2026:15:55:13 +0000] "POST /submit_update HTTP/1.1" 200 195 "-" "Python/3.12 aiohttp/3.13.1"
-INFO:__main__:✓ Update submitted: aggregated
-2026-10-02 16:55:15,537 - [aiohttp.access] - 127.0.0.1 [02/Oct/2026:15:55:12 +0000] "POST /get_model HTTP/1.1" 200 3036271 "-" "Python/3.12 aiohttp/3.13.1"
-INFO:__main__:✓ Received and loaded global model
-INFO:__main__:
-============================================================
-INFO:__main__:LOCAL TRAINING - ROUND 5
-INFO:__main__:============================================================
-Epoch 1/1:   0%|          | 0/6 [00:00<?, ?it/s]2026-10-02 16:55:15,726 - [aiohttp.access] - 127.0.0.1 [02/Oct/2026:15:55:13 +0000] "POST /get_model HTTP/1.1" 200 3036271 "-" "Python/3.12 aiohttp/3.13.1"
-INFO:__main__:✓ Received and loaded global model
-INFO:__main__:
-============================================================
-INFO:__main__:LOCAL TRAINING - ROUND 5
-INFO:__main__:============================================================
-Epoch 1/1:   0%|          | 0/6 [00:00<?, ?it/s]INFO:__main__:
-############################################################
-INFO:__main__:# FEDERATED ROUND 5/10
-INFO:__main__:############################################################
-INFO:__main__:
-→ Requesting global model (round 4)... attempt 1/5
-2026-10-02 16:55:16,214 - [aiohttp.access] - 127.0.0.1 [02/Oct/2026:15:55:16 +0000] "POST /get_model HTTP/1.1" 200 3036271 "-" "Python/3.12 aiohttp/3.13.1"
-INFO:__main__:✓ Received and loaded global model
-INFO:__main__:
-============================================================
-INFO:__main__:LOCAL TRAINING - ROUND 5
-INFO:__main__:============================================================
-Epoch 1/1:   0%|          | 0/6 [00:00<?, ?it/s]Epoch 1/1:   0%|          | 0/6 [00:00<?, ?it/s, loss=0.056964]Epoch 1/1:  17%|█▋        | 1/6 [00:00<00:04,  1.17it/s, loss=0.056964]Epoch 1/1:   0%|          | 0/6 [00:01<?, ?it/s, loss=0.063176]Epoch 1/1:  17%|█▋        | 1/6 [00:01<00:05,  1.13s/it, loss=0.063176]Epoch 1/1:  17%|█▋        | 1/6 [00:01<00:04,  1.17it/s, loss=0.062929]Epoch 1/1:  33%|███▎      | 2/6 [00:01<00:03,  1.14it/s, loss=0.062929]Epoch 1/1:   0%|          | 0/6 [00:01<?, ?it/s, loss=0.073374]Epoch 1/1:  17%|█▋        | 1/6 [00:01<00:07,  1.59s/it, loss=0.073374]Epoch 1/1:  17%|█▋        | 1/6 [00:02<00:05,  1.13s/it, loss=0.062922]Epoch 1/1:  33%|███▎      | 2/6 [00:02<00:05,  1.25s/it, loss=0.062922]2026-10-02 16:55:18,073 - [aiohttp.access] - 127.0.0.1 [02/Oct/2026:15:55:18 +0000] "GET /status HTTP/1.1" 200 280 "-" "python-requests/2.32.5"
-✓ Round 4 complete - Clients: 0/3, Strategy: fedavg
-Epoch 1/1:  33%|███▎      | 2/6 [00:02<00:03,  1.14it/s, loss=0.059646]Epoch 1/1:  50%|█████     | 3/6 [00:02<00:02,  1.10it/s, loss=0.059646]Epoch 1/1:  33%|███▎      | 2/6 [00:03<00:05,  1.25s/it, loss=0.055294]Epoch 1/1:  50%|█████     | 3/6 [00:03<00:03,  1.22s/it, loss=0.055294]Epoch 1/1:  17%|█▋        | 1/6 [00:03<00:07,  1.59s/it, loss=0.082660]Epoch 1/1:  33%|███▎      | 2/6 [00:03<00:06,  1.56s/it, loss=0.082660]Epoch 1/1:  50%|█████     | 3/6 [00:03<00:02,  1.10it/s, loss=0.062686]Epoch 1/1:  67%|██████▋   | 4/6 [00:03<00:01,  1.08it/s, loss=0.062686]Epoch 1/1:  67%|██████▋   | 4/6 [00:04<00:01,  1.08it/s, loss=0.056733]Epoch 1/1:  83%|████████▎ | 5/6 [00:04<00:00,  1.10it/s, loss=0.056733]Epoch 1/1:  50%|█████     | 3/6 [00:04<00:03,  1.22s/it, loss=0.053814]Epoch 1/1:  67%|██████▋   | 4/6 [00:04<00:02,  1.23s/it, loss=0.053814]Epoch 1/1:  83%|████████▎ | 5/6 [00:04<00:00,  1.10it/s, loss=0.050303]Epoch 1/1: 100%|██████████| 6/6 [00:04<00:00,  1.46it/s, loss=0.050303]Epoch 1/1: 100%|██████████| 6/6 [00:04<00:00,  1.26it/s, loss=0.050303]
-INFO:__main__:  Epoch 1 - Avg Loss: 0.058210
-INFO:__main__:
-============================================================
-INFO:__main__:TRAINING COMPLETE
-INFO:__main__:============================================================
-INFO:__main__:Average Loss: 0.058210
-INFO:__main__:Total Batches: 6
-INFO:__main__:
-→ Submitting model update...
-INFO:__main__:  Average loss: 0.058210
-INFO:__main__:  Weight payload: 3,036,102 bytes
-Epoch 1/1:  33%|███▎      | 2/6 [00:04<00:06,  1.56s/it, loss=0.064192]Epoch 1/1:  50%|█████     | 3/6 [00:04<00:04,  1.55s/it, loss=0.064192]Epoch 1/1:  67%|██████▋   | 4/6 [00:06<00:02,  1.23s/it, loss=0.052907]Epoch 1/1:  83%|████████▎ | 5/6 [00:06<00:01,  1.23s/it, loss=0.052907]2026-10-02 16:55:21,895 - [__main__] - Update from client_1: Loss=0.058210 (1/3)
-2026-10-02 16:55:21,896 - [aiohttp.access] - 127.0.0.1 [02/Oct/2026:15:55:20 +0000] "POST /submit_update HTTP/1.1" 200 210 "-" "Python/3.12 aiohttp/3.13.1"
-INFO:__main__:✓ Update submitted: waiting
-Epoch 1/1:  83%|████████▎ | 5/6 [00:06<00:01,  1.23s/it, loss=0.048558]Epoch 1/1: 100%|██████████| 6/6 [00:06<00:00,  1.07it/s, loss=0.048558]Epoch 1/1: 100%|██████████| 6/6 [00:06<00:00,  1.08s/it, loss=0.048558]
-INFO:__main__:  Epoch 1 - Avg Loss: 0.056112
-INFO:__main__:
-============================================================
-INFO:__main__:TRAINING COMPLETE
-INFO:__main__:============================================================
-INFO:__main__:Average Loss: 0.056112
-INFO:__main__:Total Batches: 6
-INFO:__main__:
-→ Submitting model update...
-INFO:__main__:  Average loss: 0.056112
-INFO:__main__:  Weight payload: 3,035,744 bytes
-2026-10-02 16:55:22,145 - [aiohttp.access] - 127.0.0.1 [02/Oct/2026:15:55:22 +0000] "GET /status HTTP/1.1" 200 280 "-" "python-requests/2.32.5"
-Epoch 1/1:  50%|█████     | 3/6 [00:06<00:04,  1.55s/it, loss=0.054737]Epoch 1/1:  67%|██████▋   | 4/6 [00:06<00:03,  1.55s/it, loss=0.054737]INFO:__main__:
-############################################################
-INFO:__main__:# FEDERATED ROUND 6/10
-INFO:__main__:############################################################
-INFO:__main__:
-→ Requesting global model (round 5)... attempt 1/5
-2026-10-02 16:55:23,333 - [__main__] - Update from client_3: Loss=0.056112 (2/3)
-2026-10-02 16:55:23,334 - [aiohttp.access] - 127.0.0.1 [02/Oct/2026:15:55:22 +0000] "POST /submit_update HTTP/1.1" 200 210 "-" "Python/3.12 aiohttp/3.13.1"
-INFO:__main__:✓ Update submitted: waiting
-Epoch 1/1:  67%|██████▋   | 4/6 [00:07<00:03,  1.55s/it, loss=0.066711]Epoch 1/1:  83%|████████▎ | 5/6 [00:07<00:01,  1.47s/it, loss=0.066711]Epoch 1/1:  83%|████████▎ | 5/6 [00:07<00:01,  1.47s/it, loss=0.064739]Epoch 1/1: 100%|██████████| 6/6 [00:07<00:00,  1.06s/it, loss=0.064739]Epoch 1/1: 100%|██████████| 6/6 [00:07<00:00,  1.30s/it, loss=0.064739]
-INFO:__main__:  Epoch 1 - Avg Loss: 0.067735
-INFO:__main__:
-============================================================
-INFO:__main__:TRAINING COMPLETE
-INFO:__main__:============================================================
-INFO:__main__:Average Loss: 0.067735
-INFO:__main__:Total Batches: 6
-INFO:__main__:
-→ Submitting model update...
-INFO:__main__:  Average loss: 0.067735
-INFO:__main__:  Weight payload: 3,036,102 bytes
-INFO:__main__:
-############################################################
-INFO:__main__:# FEDERATED ROUND 6/10
-INFO:__main__:############################################################
-INFO:__main__:
-→ Requesting global model (round 5)... attempt 1/5
-2026-10-02 16:55:24,928 - [__main__] - Update from client_2: Loss=0.067735 (3/3)
-2026-10-02 16:55:25,771 - [__main__] - ✓ Round 5 complete - Avg Loss: 0.060686, Clients: 3
-2026-10-02 16:55:25,777 - [__main__] - Checkpoint saved: sl_runs/attack_noise_x2/server_round_5.pt
-2026-10-02 16:55:25,778 - [aiohttp.access] - 127.0.0.1 [02/Oct/2026:15:55:24 +0000] "POST /submit_update HTTP/1.1" 200 195 "-" "Python/3.12 aiohttp/3.13.1"
-INFO:__main__:✓ Update submitted: aggregated
-2026-10-02 16:55:25,939 - [aiohttp.access] - 127.0.0.1 [02/Oct/2026:15:55:22 +0000] "POST /get_model HTTP/1.1" 200 3036271 "-" "Python/3.12 aiohttp/3.13.1"
-INFO:__main__:✓ Received and loaded global model
-INFO:__main__:
-============================================================
-INFO:__main__:LOCAL TRAINING - ROUND 6
-INFO:__main__:============================================================
-Epoch 1/1:   0%|          | 0/6 [00:00<?, ?it/s]2026-10-02 16:55:26,186 - [aiohttp.access] - 127.0.0.1 [02/Oct/2026:15:55:26 +0000] "GET /status HTTP/1.1" 200 280 "-" "python-requests/2.32.5"
-✓ Round 5 complete - Clients: 0/3, Strategy: fedavg
-2026-10-02 16:55:26,365 - [aiohttp.access] - 127.0.0.1 [02/Oct/2026:15:55:24 +0000] "POST /get_model HTTP/1.1" 200 3036271 "-" "Python/3.12 aiohttp/3.13.1"
-INFO:__main__:✓ Received and loaded global model
-INFO:__main__:
-============================================================
-INFO:__main__:LOCAL TRAINING - ROUND 6
-INFO:__main__:============================================================
-Epoch 1/1:   0%|          | 0/6 [00:00<?, ?it/s]INFO:__main__:
-############################################################
-INFO:__main__:# FEDERATED ROUND 6/10
-INFO:__main__:############################################################
-INFO:__main__:
-→ Requesting global model (round 5)... attempt 1/5
-2026-10-02 16:55:26,790 - [aiohttp.access] - 127.0.0.1 [02/Oct/2026:15:55:26 +0000] "POST /get_model HTTP/1.1" 200 3036271 "-" "Python/3.12 aiohttp/3.13.1"
-INFO:__main__:✓ Received and loaded global model
-INFO:__main__:
-============================================================
-INFO:__main__:LOCAL TRAINING - ROUND 6
-INFO:__main__:============================================================
-Epoch 1/1:   0%|          | 0/6 [00:00<?, ?it/s]Epoch 1/1:   0%|          | 0/6 [00:00<?, ?it/s, loss=0.065915]Epoch 1/1:  17%|█▋        | 1/6 [00:00<00:04,  1.14it/s, loss=0.065915]Epoch 1/1:   0%|          | 0/6 [00:01<?, ?it/s, loss=0.078000]Epoch 1/1:  17%|█▋        | 1/6 [00:01<00:05,  1.19s/it, loss=0.078000]Epoch 1/1:  17%|█▋        | 1/6 [00:01<00:04,  1.14it/s, loss=0.050149]Epoch 1/1:  33%|███▎      | 2/6 [00:01<00:03,  1.05it/s, loss=0.050149]Epoch 1/1:   0%|          | 0/6 [00:01<?, ?it/s, loss=0.086876]Epoch 1/1:  17%|█▋        | 1/6 [00:01<00:07,  1.54s/it, loss=0.086876]Epoch 1/1:  17%|█▋        | 1/6 [00:02<00:05,  1.19s/it, loss=0.051847]Epoch 1/1:  33%|███▎      | 2/6 [00:02<00:05,  1.28s/it, loss=0.051847]Epoch 1/1:  33%|███▎      | 2/6 [00:03<00:03,  1.05it/s, loss=0.044397]Epoch 1/1:  50%|█████     | 3/6 [00:03<00:03,  1.03s/it, loss=0.044397]Epoch 1/1:  17%|█▋        | 1/6 [00:03<00:07,  1.54s/it, loss=0.056628]Epoch 1/1:  33%|███▎      | 2/6 [00:03<00:06,  1.54s/it, loss=0.056628]Epoch 1/1:  50%|█████     | 3/6 [00:04<00:03,  1.03s/it, loss=0.040549]Epoch 1/1:  67%|██████▋   | 4/6 [00:04<00:02,  1.05s/it, loss=0.040549]Epoch 1/1:  33%|███▎      | 2/6 [00:03<00:05,  1.28s/it, loss=0.048596]Epoch 1/1:  50%|█████     | 3/6 [00:03<00:03,  1.24s/it, loss=0.048596]2026-10-02 16:55:30,198 - [aiohttp.access] - 127.0.0.1 [02/Oct/2026:15:55:30 +0000] "GET /status HTTP/1.1" 200 280 "-" "python-requests/2.32.5"
-Epoch 1/1:  67%|██████▋   | 4/6 [00:05<00:02,  1.05s/it, loss=0.037209]Epoch 1/1:  83%|████████▎ | 5/6 [00:05<00:01,  1.04s/it, loss=0.037209]Epoch 1/1:  83%|████████▎ | 5/6 [00:05<00:01,  1.04s/it, loss=0.032061]Epoch 1/1: 100%|██████████| 6/6 [00:05<00:00,  1.20it/s, loss=0.032061]Epoch 1/1: 100%|██████████| 6/6 [00:05<00:00,  1.08it/s, loss=0.032061]
-INFO:__main__:  Epoch 1 - Avg Loss: 0.045047
-INFO:__main__:
-============================================================
-INFO:__main__:TRAINING COMPLETE
-INFO:__main__:============================================================
-INFO:__main__:Average Loss: 0.045047
-INFO:__main__:Total Batches: 6
-Epoch 1/1:  33%|███▎      | 2/6 [00:04<00:06,  1.54s/it, loss=0.065717]INFO:__main__:
-→ Submitting model update...
-INFO:__main__:  Average loss: 0.045047
-Epoch 1/1:  50%|█████     | 3/6 [00:04<00:04,  1.57s/it, loss=0.065717]Epoch 1/1:  50%|█████     | 3/6 [00:05<00:03,  1.24s/it, loss=0.051855]Epoch 1/1:  67%|██████▋   | 4/6 [00:05<00:02,  1.30s/it, loss=0.051855]INFO:__main__:  Weight payload: 3,036,102 bytes
-2026-10-02 16:55:32,504 - [__main__] - Update from client_1: Loss=0.045047 (1/3)
-2026-10-02 16:55:32,505 - [aiohttp.access] - 127.0.0.1 [02/Oct/2026:15:55:31 +0000] "POST /submit_update HTTP/1.1" 200 210 "-" "Python/3.12 aiohttp/3.13.1"
-INFO:__main__:✓ Update submitted: waiting
-Epoch 1/1:  67%|██████▋   | 4/6 [00:06<00:02,  1.30s/it, loss=0.051601]Epoch 1/1:  83%|████████▎ | 5/6 [00:06<00:01,  1.27s/it, loss=0.051601]Epoch 1/1:  50%|█████     | 3/6 [00:06<00:04,  1.57s/it, loss=0.053237]Epoch 1/1:  67%|██████▋   | 4/6 [00:06<00:03,  1.54s/it, loss=0.053237]Epoch 1/1:  83%|████████▎ | 5/6 [00:06<00:01,  1.27s/it, loss=0.060496]Epoch 1/1: 100%|██████████| 6/6 [00:06<00:00,  1.05it/s, loss=0.060496]Epoch 1/1: 100%|██████████| 6/6 [00:06<00:00,  1.11s/it, loss=0.060496]
-INFO:__main__:  Epoch 1 - Avg Loss: 0.057066
-INFO:__main__:
-============================================================
-INFO:__main__:TRAINING COMPLETE
-INFO:__main__:============================================================
-INFO:__main__:Average Loss: 0.057066
-INFO:__main__:Total Batches: 6
-INFO:__main__:
-→ Submitting model update...
-INFO:__main__:  Average loss: 0.057066
-INFO:__main__:  Weight payload: 3,035,744 bytes
-INFO:__main__:
-############################################################
-INFO:__main__:# FEDERATED ROUND 7/10
-INFO:__main__:############################################################
-INFO:__main__:
-→ Requesting global model (round 6)... attempt 1/5
-2026-10-02 16:55:33,993 - [__main__] - Update from client_3: Loss=0.057066 (2/3)
-2026-10-02 16:55:33,993 - [aiohttp.access] - 127.0.0.1 [02/Oct/2026:15:55:33 +0000] "POST /submit_update HTTP/1.1" 200 210 "-" "Python/3.12 aiohttp/3.13.1"
-INFO:__main__:✓ Update submitted: waiting
-2026-10-02 16:55:34,245 - [aiohttp.access] - 127.0.0.1 [02/Oct/2026:15:55:34 +0000] "GET /status HTTP/1.1" 200 280 "-" "python-requests/2.32.5"
-Epoch 1/1:  67%|██████▋   | 4/6 [00:07<00:03,  1.54s/it, loss=0.070569]Epoch 1/1:  83%|████████▎ | 5/6 [00:07<00:01,  1.47s/it, loss=0.070569]Epoch 1/1:  83%|████████▎ | 5/6 [00:07<00:01,  1.47s/it, loss=0.046042]Epoch 1/1: 100%|██████████| 6/6 [00:07<00:00,  1.06s/it, loss=0.046042]Epoch 1/1: 100%|██████████| 6/6 [00:07<00:00,  1.30s/it, loss=0.046042]
-INFO:__main__:  Epoch 1 - Avg Loss: 0.063178
-INFO:__main__:
-============================================================
-INFO:__main__:TRAINING COMPLETE
-INFO:__main__:============================================================
-INFO:__main__:Average Loss: 0.063178
-INFO:__main__:Total Batches: 6
-INFO:__main__:
-→ Submitting model update...
-INFO:__main__:  Average loss: 0.063178
-INFO:__main__:  Weight payload: 3,036,102 bytes
-INFO:__main__:
-############################################################
-INFO:__main__:# FEDERATED ROUND 7/10
-INFO:__main__:############################################################
-INFO:__main__:
-→ Requesting global model (round 6)... attempt 1/5
-2026-10-02 16:55:35,660 - [__main__] - Update from client_2: Loss=0.063178 (3/3)
-2026-10-02 16:55:36,629 - [__main__] - ✓ Round 6 complete - Avg Loss: 0.055097, Clients: 3
-2026-10-02 16:55:36,635 - [__main__] - Checkpoint saved: sl_runs/attack_noise_x2/server_round_6.pt
-2026-10-02 16:55:36,636 - [aiohttp.access] - 127.0.0.1 [02/Oct/2026:15:55:34 +0000] "POST /submit_update HTTP/1.1" 200 195 "-" "Python/3.12 aiohttp/3.13.1"
-INFO:__main__:✓ Update submitted: aggregated
-2026-10-02 16:55:37,010 - [aiohttp.access] - 127.0.0.1 [02/Oct/2026:15:55:34 +0000] "POST /get_model HTTP/1.1" 200 3036271 "-" "Python/3.12 aiohttp/3.13.1"
-INFO:__main__:✓ Received and loaded global model
-INFO:__main__:
-============================================================
-INFO:__main__:LOCAL TRAINING - ROUND 7
-INFO:__main__:============================================================
-Epoch 1/1:   0%|          | 0/6 [00:00<?, ?it/s]2026-10-02 16:55:37,558 - [aiohttp.access] - 127.0.0.1 [02/Oct/2026:15:55:33 +0000] "POST /get_model HTTP/1.1" 200 3036271 "-" "Python/3.12 aiohttp/3.13.1"
-INFO:__main__:✓ Received and loaded global model
-INFO:__main__:
-============================================================
-INFO:__main__:LOCAL TRAINING - ROUND 7
-INFO:__main__:============================================================
-Epoch 1/1:   0%|          | 0/6 [00:00<?, ?it/s]INFO:__main__:
-############################################################
-INFO:__main__:# FEDERATED ROUND 7/10
-INFO:__main__:############################################################
-INFO:__main__:
-→ Requesting global model (round 6)... attempt 1/5
-2026-10-02 16:55:37,655 - [aiohttp.access] - 127.0.0.1 [02/Oct/2026:15:55:37 +0000] "POST /get_model HTTP/1.1" 200 3036271 "-" "Python/3.12 aiohttp/3.13.1"
-INFO:__main__:✓ Received and loaded global model
-INFO:__main__:
-============================================================
-INFO:__main__:LOCAL TRAINING - ROUND 7
-INFO:__main__:============================================================
-Epoch 1/1:   0%|          | 0/6 [00:00<?, ?it/s]Epoch 1/1:   0%|          | 0/6 [00:00<?, ?it/s, loss=0.063897]Epoch 1/1:  17%|█▋        | 1/6 [00:00<00:04,  1.23it/s, loss=0.063897]2026-10-02 16:55:38,308 - [aiohttp.access] - 127.0.0.1 [02/Oct/2026:15:55:38 +0000] "GET /status HTTP/1.1" 200 280 "-" "python-requests/2.32.5"
-✓ Round 6 complete - Clients: 0/3, Strategy: fedavg
-Epoch 1/1:   0%|          | 0/6 [00:00<?, ?it/s, loss=0.053587]Epoch 1/1:  17%|█▋        | 1/6 [00:00<00:04,  1.09it/s, loss=0.053587]Epoch 1/1:  17%|█▋        | 1/6 [00:01<00:04,  1.23it/s, loss=0.053175]Epoch 1/1:  33%|███▎      | 2/6 [00:01<00:03,  1.16it/s, loss=0.053175]Epoch 1/1:   0%|          | 0/6 [00:01<?, ?it/s, loss=0.074340]Epoch 1/1:  17%|█▋        | 1/6 [00:01<00:07,  1.50s/it, loss=0.074340]Epoch 1/1:  17%|█▋        | 1/6 [00:01<00:04,  1.09it/s, loss=0.052686]Epoch 1/1:  33%|███▎      | 2/6 [00:01<00:03,  1.05it/s, loss=0.052686]Epoch 1/1:  33%|███▎      | 2/6 [00:02<00:03,  1.16it/s, loss=0.047608]Epoch 1/1:  50%|█████     | 3/6 [00:02<00:02,  1.05it/s, loss=0.047608]Epoch 1/1:  33%|███▎      | 2/6 [00:02<00:03,  1.05it/s, loss=0.047749]Epoch 1/1:  50%|█████     | 3/6 [00:02<00:02,  1.07it/s, loss=0.047749]Epoch 1/1:  17%|█▋        | 1/6 [00:03<00:07,  1.50s/it, loss=0.058531]Epoch 1/1:  33%|███▎      | 2/6 [00:03<00:06,  1.51s/it, loss=0.058531]Epoch 1/1:  50%|█████     | 3/6 [00:03<00:02,  1.05it/s, loss=0.056793]Epoch 1/1:  67%|██████▋   | 4/6 [00:03<00:01,  1.03it/s, loss=0.056793]Epoch 1/1:  50%|█████     | 3/6 [00:03<00:02,  1.07it/s, loss=0.044770]Epoch 1/1:  67%|██████▋   | 4/6 [00:03<00:01,  1.06it/s, loss=0.044770]Epoch 1/1:  67%|██████▋   | 4/6 [00:04<00:01,  1.03it/s, loss=0.052199]Epoch 1/1:  83%|████████▎ | 5/6 [00:04<00:00,  1.01it/s, loss=0.052199]Epoch 1/1:  83%|████████▎ | 5/6 [00:05<00:00,  1.01it/s, loss=0.048236]Epoch 1/1: 100%|██████████| 6/6 [00:05<00:00,  1.31it/s, loss=0.048236]Epoch 1/1: 100%|██████████| 6/6 [00:05<00:00,  1.18it/s, loss=0.048236]
-INFO:__main__:  Epoch 1 - Avg Loss: 0.053651
-INFO:__main__:
-============================================================
-INFO:__main__:TRAINING COMPLETE
-INFO:__main__:============================================================
-INFO:__main__:Average Loss: 0.053651
-INFO:__main__:Total Batches: 6
-INFO:__main__:
-→ Submitting model update...
-INFO:__main__:  Average loss: 0.053651
-INFO:__main__:  Weight payload: 3,035,744 bytes
-Epoch 1/1:  33%|███▎      | 2/6 [00:04<00:06,  1.51s/it, loss=0.053294]Epoch 1/1:  50%|█████     | 3/6 [00:04<00:04,  1.50s/it, loss=0.053294]Epoch 1/1:  67%|██████▋   | 4/6 [00:04<00:01,  1.06it/s, loss=0.041301]Epoch 1/1:  83%|████████▎ | 5/6 [00:04<00:00,  1.04it/s, loss=0.041301]2026-10-02 16:55:42,356 - [aiohttp.access] - 127.0.0.1 [02/Oct/2026:15:55:42 +0000] "GET /status HTTP/1.1" 200 280 "-" "python-requests/2.32.5"
-Epoch 1/1:  83%|████████▎ | 5/6 [00:05<00:00,  1.04it/s, loss=0.044238]Epoch 1/1: 100%|██████████| 6/6 [00:05<00:00,  1.39it/s, loss=0.044238]Epoch 1/1: 100%|██████████| 6/6 [00:05<00:00,  1.20it/s, loss=0.044238]
-INFO:__main__:  Epoch 1 - Avg Loss: 0.047389
-INFO:__main__:
-============================================================
-INFO:__main__:TRAINING COMPLETE
-INFO:__main__:============================================================
-INFO:__main__:Average Loss: 0.047389
-INFO:__main__:Total Batches: 6
-INFO:__main__:
-→ Submitting model update...
-INFO:__main__:  Average loss: 0.047389
-INFO:__main__:  Weight payload: 3,036,102 bytes
-2026-10-02 16:55:43,439 - [__main__] - Update from client_3: Loss=0.053651 (1/3)
-2026-10-02 16:55:43,440 - [aiohttp.access] - 127.0.0.1 [02/Oct/2026:15:55:42 +0000] "POST /submit_update HTTP/1.1" 200 210 "-" "Python/3.12 aiohttp/3.13.1"
-INFO:__main__:✓ Update submitted: waiting
-Epoch 1/1:  50%|█████     | 3/6 [00:05<00:04,  1.50s/it, loss=0.051605]Epoch 1/1:  67%|██████▋   | 4/6 [00:05<00:02,  1.49s/it, loss=0.051605]2026-10-02 16:55:44,391 - [__main__] - Update from client_1: Loss=0.047389 (2/3)
-2026-10-02 16:55:44,391 - [aiohttp.access] - 127.0.0.1 [02/Oct/2026:15:55:42 +0000] "POST /submit_update HTTP/1.1" 200 210 "-" "Python/3.12 aiohttp/3.13.1"
-INFO:__main__:✓ Update submitted: waiting
-INFO:__main__:
-############################################################
-INFO:__main__:# FEDERATED ROUND 8/10
-INFO:__main__:############################################################
-INFO:__main__:
-→ Requesting global model (round 7)... attempt 1/5
-Epoch 1/1:  67%|██████▋   | 4/6 [00:07<00:02,  1.49s/it, loss=0.056324]Epoch 1/1:  83%|████████▎ | 5/6 [00:07<00:01,  1.42s/it, loss=0.056324]Epoch 1/1:  83%|████████▎ | 5/6 [00:07<00:01,  1.42s/it, loss=0.058778]Epoch 1/1: 100%|██████████| 6/6 [00:07<00:00,  1.03s/it, loss=0.058778]Epoch 1/1: 100%|██████████| 6/6 [00:07<00:00,  1.26s/it, loss=0.058778]
-INFO:__main__:  Epoch 1 - Avg Loss: 0.058812
-INFO:__main__:
-============================================================
-INFO:__main__:TRAINING COMPLETE
-INFO:__main__:============================================================
-INFO:__main__:Average Loss: 0.058812
-INFO:__main__:Total Batches: 6
-INFO:__main__:
-→ Submitting model update...
-INFO:__main__:  Average loss: 0.058812
-INFO:__main__:  Weight payload: 3,036,102 bytes
-INFO:__main__:
-############################################################
-INFO:__main__:# FEDERATED ROUND 8/10
-INFO:__main__:############################################################
-INFO:__main__:
-→ Requesting global model (round 7)... attempt 1/5
-2026-10-02 16:55:46,043 - [__main__] - Update from client_2: Loss=0.058812 (3/3)
-2026-10-02 16:55:46,467 - [aiohttp.access] - 127.0.0.1 [02/Oct/2026:15:55:46 +0000] "GET /status HTTP/1.1" 200 280 "-" "python-requests/2.32.5"
-2026-10-02 16:55:46,926 - [__main__] - ✓ Round 7 complete - Avg Loss: 0.053284, Clients: 3
-2026-10-02 16:55:46,932 - [__main__] - Checkpoint saved: sl_runs/attack_noise_x2/server_round_7.pt
-2026-10-02 16:55:46,933 - [aiohttp.access] - 127.0.0.1 [02/Oct/2026:15:55:45 +0000] "POST /submit_update HTTP/1.1" 200 195 "-" "Python/3.12 aiohttp/3.13.1"
-INFO:__main__:✓ Update submitted: aggregated
-2026-10-02 16:55:47,424 - [aiohttp.access] - 127.0.0.1 [02/Oct/2026:15:55:45 +0000] "POST /get_model HTTP/1.1" 200 3036271 "-" "Python/3.12 aiohttp/3.13.1"
-INFO:__main__:✓ Received and loaded global model
-INFO:__main__:
-============================================================
-INFO:__main__:LOCAL TRAINING - ROUND 8
-INFO:__main__:============================================================
-Epoch 1/1:   0%|          | 0/6 [00:00<?, ?it/s]2026-10-02 16:55:47,486 - [aiohttp.access] - 127.0.0.1 [02/Oct/2026:15:55:44 +0000] "POST /get_model HTTP/1.1" 200 3036271 "-" "Python/3.12 aiohttp/3.13.1"
-INFO:__main__:✓ Received and loaded global model
-INFO:__main__:
-============================================================
-INFO:__main__:LOCAL TRAINING - ROUND 8
-INFO:__main__:============================================================
-Epoch 1/1:   0%|          | 0/6 [00:00<?, ?it/s]INFO:__main__:
-############################################################
-INFO:__main__:# FEDERATED ROUND 8/10
-INFO:__main__:############################################################
-INFO:__main__:
-→ Requesting global model (round 7)... attempt 1/5
-2026-10-02 16:55:47,945 - [aiohttp.access] - 127.0.0.1 [02/Oct/2026:15:55:47 +0000] "POST /get_model HTTP/1.1" 200 3036271 "-" "Python/3.12 aiohttp/3.13.1"
-INFO:__main__:✓ Received and loaded global model
-INFO:__main__:
-============================================================
-INFO:__main__:LOCAL TRAINING - ROUND 8
-INFO:__main__:============================================================
-Epoch 1/1:   0%|          | 0/6 [00:00<?, ?it/s]Epoch 1/1:   0%|          | 0/6 [00:00<?, ?it/s, loss=0.102293]Epoch 1/1:  17%|█▋        | 1/6 [00:00<00:04,  1.09it/s, loss=0.102293]Epoch 1/1:   0%|          | 0/6 [00:01<?, ?it/s, loss=0.102578]Epoch 1/1:  17%|█▋        | 1/6 [00:01<00:05,  1.14s/it, loss=0.102578]Epoch 1/1:  17%|█▋        | 1/6 [00:01<00:04,  1.09it/s, loss=0.059453]Epoch 1/1:  33%|███▎      | 2/6 [00:01<00:03,  1.01it/s, loss=0.059453]Epoch 1/1:   0%|          | 0/6 [00:01<?, ?it/s, loss=0.116844]Epoch 1/1:  17%|█▋        | 1/6 [00:01<00:07,  1.51s/it, loss=0.116844]Epoch 1/1:  17%|█▋        | 1/6 [00:02<00:05,  1.14s/it, loss=0.057189]Epoch 1/1:  33%|███▎      | 2/6 [00:02<00:04,  1.11s/it, loss=0.057189]Epoch 1/1:  33%|███▎      | 2/6 [00:03<00:03,  1.01it/s, loss=0.062997]Epoch 1/1:  50%|█████     | 3/6 [00:03<00:03,  1.02s/it, loss=0.062997]2026-10-02 16:55:50,523 - [aiohttp.access] - 127.0.0.1 [02/Oct/2026:15:55:50 +0000] "GET /status HTTP/1.1" 200 280 "-" "python-requests/2.32.5"
-✓ Round 7 complete - Clients: 0/3, Strategy: fedavg
-Epoch 1/1:  33%|███▎      | 2/6 [00:03<00:04,  1.11s/it, loss=0.065290]Epoch 1/1:  50%|█████     | 3/6 [00:03<00:03,  1.16s/it, loss=0.065290]Epoch 1/1:  17%|█▋        | 1/6 [00:03<00:07,  1.51s/it, loss=0.080509]Epoch 1/1:  33%|███▎      | 2/6 [00:03<00:06,  1.56s/it, loss=0.080509]Epoch 1/1:  50%|█████     | 3/6 [00:04<00:03,  1.02s/it, loss=0.058051]Epoch 1/1:  67%|██████▋   | 4/6 [00:04<00:02,  1.05s/it, loss=0.058051]Epoch 1/1:  50%|█████     | 3/6 [00:04<00:03,  1.16s/it, loss=0.060750]Epoch 1/1:  67%|██████▋   | 4/6 [00:04<00:02,  1.21s/it, loss=0.060750]Epoch 1/1:  67%|██████▋   | 4/6 [00:05<00:02,  1.05s/it, loss=0.058701]Epoch 1/1:  83%|████████▎ | 5/6 [00:05<00:01,  1.07s/it, loss=0.058701]Epoch 1/1:  33%|███▎      | 2/6 [00:04<00:06,  1.56s/it, loss=0.066921]Epoch 1/1:  50%|█████     | 3/6 [00:04<00:04,  1.59s/it, loss=0.066921]Epoch 1/1:  83%|████████▎ | 5/6 [00:05<00:01,  1.07s/it, loss=0.064399]Epoch 1/1: 100%|██████████| 6/6 [00:05<00:00,  1.25it/s, loss=0.064399]Epoch 1/1: 100%|██████████| 6/6 [00:05<00:00,  1.09it/s, loss=0.064399]
-INFO:__main__:  Epoch 1 - Avg Loss: 0.067649
-INFO:__main__:
-============================================================
-INFO:__main__:TRAINING COMPLETE
-INFO:__main__:============================================================
-INFO:__main__:Average Loss: 0.067649
-INFO:__main__:Total Batches: 6
-INFO:__main__:
-→ Submitting model update...
-INFO:__main__:  Average loss: 0.067649
-INFO:__main__:  Weight payload: 3,036,102 bytes
-Epoch 1/1:  67%|██████▋   | 4/6 [00:05<00:02,  1.21s/it, loss=0.061023]Epoch 1/1:  83%|████████▎ | 5/6 [00:05<00:01,  1.22s/it, loss=0.061023]Epoch 1/1:  83%|████████▎ | 5/6 [00:06<00:01,  1.22s/it, loss=0.053437]Epoch 1/1: 100%|██████████| 6/6 [00:06<00:00,  1.09it/s, loss=0.053437]Epoch 1/1: 100%|██████████| 6/6 [00:06<00:00,  1.05s/it, loss=0.053437]
-INFO:__main__:  Epoch 1 - Avg Loss: 0.066711
-INFO:__main__:
-============================================================
-INFO:__main__:TRAINING COMPLETE
-INFO:__main__:============================================================
-INFO:__main__:Average Loss: 0.066711
-INFO:__main__:Total Batches: 6
-INFO:__main__:
-→ Submitting model update...
-INFO:__main__:  Average loss: 0.066711
-INFO:__main__:  Weight payload: 3,035,744 bytes
-2026-10-02 16:55:53,960 - [__main__] - Update from client_1: Loss=0.067649 (1/3)
-2026-10-02 16:55:53,961 - [aiohttp.access] - 127.0.0.1 [02/Oct/2026:15:55:52 +0000] "POST /submit_update HTTP/1.1" 200 210 "-" "Python/3.12 aiohttp/3.13.1"
-INFO:__main__:✓ Update submitted: waiting
-Epoch 1/1:  50%|█████     | 3/6 [00:06<00:04,  1.59s/it, loss=0.072481]Epoch 1/1:  67%|██████▋   | 4/6 [00:06<00:03,  1.56s/it, loss=0.072481]2026-10-02 16:55:54,587 - [aiohttp.access] - 127.0.0.1 [02/Oct/2026:15:55:54 +0000] "GET /status HTTP/1.1" 200 280 "-" "python-requests/2.32.5"
-INFO:__main__:
-############################################################
-INFO:__main__:# FEDERATED ROUND 9/10
-INFO:__main__:############################################################
-INFO:__main__:
-→ Requesting global model (round 8)... attempt 1/5
-2026-10-02 16:55:55,210 - [__main__] - Update from client_3: Loss=0.066711 (2/3)
-2026-10-02 16:55:55,211 - [aiohttp.access] - 127.0.0.1 [02/Oct/2026:15:55:53 +0000] "POST /submit_update HTTP/1.1" 200 210 "-" "Python/3.12 aiohttp/3.13.1"
-INFO:__main__:✓ Update submitted: waiting
-Epoch 1/1:  67%|██████▋   | 4/6 [00:07<00:03,  1.56s/it, loss=0.069343]Epoch 1/1:  83%|████████▎ | 5/6 [00:07<00:01,  1.47s/it, loss=0.069343]Epoch 1/1:  83%|████████▎ | 5/6 [00:07<00:01,  1.47s/it, loss=0.058795]Epoch 1/1: 100%|██████████| 6/6 [00:07<00:00,  1.05s/it, loss=0.058795]Epoch 1/1: 100%|██████████| 6/6 [00:07<00:00,  1.30s/it, loss=0.058795]
-INFO:__main__:  Epoch 1 - Avg Loss: 0.077482
-INFO:__main__:
-============================================================
-INFO:__main__:TRAINING COMPLETE
-INFO:__main__:============================================================
-INFO:__main__:Average Loss: 0.077482
-INFO:__main__:Total Batches: 6
-INFO:__main__:
-→ Submitting model update...
-INFO:__main__:  Average loss: 0.077482
-INFO:__main__:  Weight payload: 3,036,102 bytes
-INFO:__main__:
-############################################################
-INFO:__main__:# FEDERATED ROUND 9/10
-INFO:__main__:############################################################
-INFO:__main__:
-→ Requesting global model (round 8)... attempt 1/5
-2026-10-02 16:55:56,744 - [__main__] - Update from client_2: Loss=0.077482 (3/3)
-2026-10-02 16:55:57,718 - [__main__] - ✓ Round 8 complete - Avg Loss: 0.070614, Clients: 3
-2026-10-02 16:55:57,722 - [__main__] - Checkpoint saved: sl_runs/attack_noise_x2/server_round_8.pt
-2026-10-02 16:55:57,723 - [aiohttp.access] - 127.0.0.1 [02/Oct/2026:15:55:55 +0000] "POST /submit_update HTTP/1.1" 200 195 "-" "Python/3.12 aiohttp/3.13.1"
-INFO:__main__:✓ Update submitted: aggregated
-2026-10-02 16:55:58,024 - [aiohttp.access] - 127.0.0.1 [02/Oct/2026:15:55:54 +0000] "POST /get_model HTTP/1.1" 200 3036271 "-" "Python/3.12 aiohttp/3.13.1"
-INFO:__main__:✓ Received and loaded global model
-INFO:__main__:
-============================================================
-INFO:__main__:LOCAL TRAINING - ROUND 9
-INFO:__main__:============================================================
-Epoch 1/1:   0%|          | 0/6 [00:00<?, ?it/s]2026-10-02 16:55:58,242 - [aiohttp.access] - 127.0.0.1 [02/Oct/2026:15:55:56 +0000] "POST /get_model HTTP/1.1" 200 3036271 "-" "Python/3.12 aiohttp/3.13.1"
-INFO:__main__:✓ Received and loaded global model
-INFO:__main__:
-============================================================
-INFO:__main__:LOCAL TRAINING - ROUND 9
-INFO:__main__:============================================================
-Epoch 1/1:   0%|          | 0/6 [00:00<?, ?it/s]2026-10-02 16:55:58,611 - [aiohttp.access] - 127.0.0.1 [02/Oct/2026:15:55:58 +0000] "GET /status HTTP/1.1" 200 280 "-" "python-requests/2.32.5"
-✓ Round 8 complete - Clients: 0/3, Strategy: fedavg
-INFO:__main__:
-############################################################
-INFO:__main__:# FEDERATED ROUND 9/10
-INFO:__main__:############################################################
-INFO:__main__:
-→ Requesting global model (round 8)... attempt 1/5
-2026-10-02 16:55:58,748 - [aiohttp.access] - 127.0.0.1 [02/Oct/2026:15:55:58 +0000] "POST /get_model HTTP/1.1" 200 3036271 "-" "Python/3.12 aiohttp/3.13.1"
-INFO:__main__:✓ Received and loaded global model
-INFO:__main__:
-============================================================
-INFO:__main__:LOCAL TRAINING - ROUND 9
-INFO:__main__:============================================================
-Epoch 1/1:   0%|          | 0/6 [00:00<?, ?it/s]Epoch 1/1:   0%|          | 0/6 [00:00<?, ?it/s, loss=0.097160]Epoch 1/1:  17%|█▋        | 1/6 [00:00<00:03,  1.30it/s, loss=0.097160]Epoch 1/1:   0%|          | 0/6 [00:00<?, ?it/s, loss=0.123192]Epoch 1/1:  17%|█▋        | 1/6 [00:00<00:04,  1.09it/s, loss=0.123192]Epoch 1/1:  17%|█▋        | 1/6 [00:01<00:03,  1.30it/s, loss=0.074388]Epoch 1/1:  33%|███▎      | 2/6 [00:01<00:03,  1.17it/s, loss=0.074388]Epoch 1/1:  17%|█▋        | 1/6 [00:01<00:04,  1.09it/s, loss=0.073866]Epoch 1/1:  33%|███▎      | 2/6 [00:01<00:03,  1.02it/s, loss=0.073866]Epoch 1/1:   0%|          | 0/6 [00:01<?, ?it/s, loss=0.130663]Epoch 1/1:  17%|█▋        | 1/6 [00:01<00:07,  1.48s/it, loss=0.130663]Epoch 1/1:  33%|███▎      | 2/6 [00:02<00:03,  1.17it/s, loss=0.066680]Epoch 1/1:  50%|█████     | 3/6 [00:02<00:02,  1.05it/s, loss=0.066680]Epoch 1/1:  33%|███▎      | 2/6 [00:03<00:03,  1.02it/s, loss=0.071689]Epoch 1/1:  50%|█████     | 3/6 [00:03<00:03,  1.10s/it, loss=0.071689]Epoch 1/1:  17%|█▋        | 1/6 [00:03<00:07,  1.48s/it, loss=0.091066]Epoch 1/1:  33%|███▎      | 2/6 [00:03<00:06,  1.53s/it, loss=0.091066]Epoch 1/1:  50%|█████     | 3/6 [00:03<00:02,  1.05it/s, loss=0.058301]Epoch 1/1:  67%|██████▋   | 4/6 [00:03<00:02,  1.04s/it, loss=0.058301]2026-10-02 16:56:02,684 - [aiohttp.access] - 127.0.0.1 [02/Oct/2026:15:56:02 +0000] "GET /status HTTP/1.1" 200 280 "-" "python-requests/2.32.5"
-Epoch 1/1:  50%|█████     | 3/6 [00:04<00:03,  1.10s/it, loss=0.071187]Epoch 1/1:  67%|██████▋   | 4/6 [00:04<00:02,  1.16s/it, loss=0.071187]Epoch 1/1:  67%|██████▋   | 4/6 [00:04<00:02,  1.04s/it, loss=0.055284]Epoch 1/1:  83%|████████▎ | 5/6 [00:04<00:01,  1.05s/it, loss=0.055284]Epoch 1/1:  83%|████████▎ | 5/6 [00:05<00:01,  1.05s/it, loss=0.065770]Epoch 1/1: 100%|██████████| 6/6 [00:05<00:00,  1.23it/s, loss=0.065770]Epoch 1/1: 100%|██████████| 6/6 [00:05<00:00,  1.12it/s, loss=0.065770]
-INFO:__main__:  Epoch 1 - Avg Loss: 0.069597
-INFO:__main__:
-============================================================
-INFO:__main__:TRAINING COMPLETE
-INFO:__main__:============================================================
-INFO:__main__:Average Loss: 0.069597
-INFO:__main__:Total Batches: 6
-INFO:__main__:
-→ Submitting model update...
-INFO:__main__:  Average loss: 0.069597
-INFO:__main__:  Weight payload: 3,036,102 bytes
-Epoch 1/1:  33%|███▎      | 2/6 [00:04<00:06,  1.53s/it, loss=0.087616]Epoch 1/1:  50%|█████     | 3/6 [00:04<00:04,  1.62s/it, loss=0.087616]Epoch 1/1:  67%|██████▋   | 4/6 [00:05<00:02,  1.16s/it, loss=0.060278]Epoch 1/1:  83%|████████▎ | 5/6 [00:05<00:01,  1.20s/it, loss=0.060278]Epoch 1/1:  83%|████████▎ | 5/6 [00:06<00:01,  1.20s/it, loss=0.053479]Epoch 1/1: 100%|██████████| 6/6 [00:06<00:00,  1.10it/s, loss=0.053479]Epoch 1/1: 100%|██████████| 6/6 [00:06<00:00,  1.01s/it, loss=0.053479]
-INFO:__main__:  Epoch 1 - Avg Loss: 0.075615
-INFO:__main__:
-============================================================
-INFO:__main__:TRAINING COMPLETE
-INFO:__main__:============================================================
-INFO:__main__:Average Loss: 0.075615
-INFO:__main__:Total Batches: 6
-INFO:__main__:
-→ Submitting model update...
-INFO:__main__:  Average loss: 0.075615
-INFO:__main__:  Weight payload: 3,035,744 bytes
-2026-10-02 16:56:04,776 - [__main__] - Update from client_1: Loss=0.069597 (1/3)
-2026-10-02 16:56:04,776 - [aiohttp.access] - 127.0.0.1 [02/Oct/2026:15:56:03 +0000] "POST /submit_update HTTP/1.1" 200 210 "-" "Python/3.12 aiohttp/3.13.1"
-INFO:__main__:✓ Update submitted: waiting
-Epoch 1/1:  50%|█████     | 3/6 [00:06<00:04,  1.62s/it, loss=0.076195]Epoch 1/1:  67%|██████▋   | 4/6 [00:06<00:03,  1.55s/it, loss=0.076195]INFO:__main__:
-############################################################
-INFO:__main__:# FEDERATED ROUND 10/10
-INFO:__main__:############################################################
-INFO:__main__:
-→ Requesting global model (round 9)... attempt 1/5
-2026-10-02 16:56:05,790 - [__main__] - Update from client_3: Loss=0.075615 (2/3)
-2026-10-02 16:56:05,791 - [aiohttp.access] - 127.0.0.1 [02/Oct/2026:15:56:04 +0000] "POST /submit_update HTTP/1.1" 200 210 "-" "Python/3.12 aiohttp/3.13.1"
-INFO:__main__:✓ Update submitted: waiting
-Epoch 1/1:  67%|██████▋   | 4/6 [00:07<00:03,  1.55s/it, loss=0.065281]Epoch 1/1:  83%|████████▎ | 5/6 [00:07<00:01,  1.46s/it, loss=0.065281]Epoch 1/1:  83%|████████▎ | 5/6 [00:07<00:01,  1.46s/it, loss=0.071074]Epoch 1/1: 100%|██████████| 6/6 [00:07<00:00,  1.06s/it, loss=0.071074]Epoch 1/1: 100%|██████████| 6/6 [00:07<00:00,  1.30s/it, loss=0.071074]
-INFO:__main__:  Epoch 1 - Avg Loss: 0.086983
-INFO:__main__:
-============================================================
-INFO:__main__:TRAINING COMPLETE
-INFO:__main__:============================================================
-INFO:__main__:Average Loss: 0.086983
-INFO:__main__:Total Batches: 6
-INFO:__main__:
-→ Submitting model update...
-INFO:__main__:  Average loss: 0.086983
-INFO:__main__:  Weight payload: 3,036,102 bytes
-2026-10-02 16:56:06,724 - [aiohttp.access] - 127.0.0.1 [02/Oct/2026:15:56:06 +0000] "GET /status HTTP/1.1" 200 280 "-" "python-requests/2.32.5"
-INFO:__main__:
-############################################################
-INFO:__main__:# FEDERATED ROUND 10/10
-INFO:__main__:############################################################
-INFO:__main__:
-→ Requesting global model (round 9)... attempt 1/5
-2026-10-02 16:56:07,518 - [__main__] - Update from client_2: Loss=0.086983 (3/3)
-2026-10-02 16:56:08,349 - [__main__] - ✓ Round 9 complete - Avg Loss: 0.077398, Clients: 3
-2026-10-02 16:56:08,355 - [__main__] - Checkpoint saved: sl_runs/attack_noise_x2/server_round_9.pt
-2026-10-02 16:56:08,356 - [aiohttp.access] - 127.0.0.1 [02/Oct/2026:15:56:06 +0000] "POST /submit_update HTTP/1.1" 200 195 "-" "Python/3.12 aiohttp/3.13.1"
-INFO:__main__:✓ Update submitted: aggregated
-2026-10-02 16:56:08,810 - [aiohttp.access] - 127.0.0.1 [02/Oct/2026:15:56:05 +0000] "POST /get_model HTTP/1.1" 200 3036271 "-" "Python/3.12 aiohttp/3.13.1"
-2026-10-02 16:56:08,811 - [aiohttp.access] - 127.0.0.1 [02/Oct/2026:15:56:06 +0000] "POST /get_model HTTP/1.1" 200 3036271 "-" "Python/3.12 aiohttp/3.13.1"
-INFO:__main__:✓ Received and loaded global model
-INFO:__main__:
-============================================================
-INFO:__main__:LOCAL TRAINING - ROUND 10
-INFO:__main__:============================================================
-Epoch 1/1:   0%|          | 0/6 [00:00<?, ?it/s]INFO:__main__:✓ Received and loaded global model
-INFO:__main__:
-============================================================
-INFO:__main__:LOCAL TRAINING - ROUND 10
-INFO:__main__:============================================================
-Epoch 1/1:   0%|          | 0/6 [00:00<?, ?it/s]INFO:__main__:
-############################################################
-INFO:__main__:# FEDERATED ROUND 10/10
-INFO:__main__:############################################################
-INFO:__main__:
-→ Requesting global model (round 9)... attempt 1/5
-2026-10-02 16:56:09,369 - [aiohttp.access] - 127.0.0.1 [02/Oct/2026:15:56:09 +0000] "POST /get_model HTTP/1.1" 200 3036271 "-" "Python/3.12 aiohttp/3.13.1"
-INFO:__main__:✓ Received and loaded global model
-INFO:__main__:
-============================================================
-INFO:__main__:LOCAL TRAINING - ROUND 10
-INFO:__main__:============================================================
-Epoch 1/1:   0%|          | 0/6 [00:00<?, ?it/s]Epoch 1/1:   0%|          | 0/6 [00:00<?, ?it/s, loss=0.213000]Epoch 1/1:  17%|█▋        | 1/6 [00:00<00:03,  1.42it/s, loss=0.213000]Epoch 1/1:   0%|          | 0/6 [00:00<?, ?it/s, loss=0.223127]Epoch 1/1:  17%|█▋        | 1/6 [00:00<00:04,  1.08it/s, loss=0.223127]Epoch 1/1:  17%|█▋        | 1/6 [00:01<00:03,  1.42it/s, loss=0.162061]Epoch 1/1:  33%|███▎      | 2/6 [00:01<00:03,  1.20it/s, loss=0.162061]Epoch 1/1:  17%|█▋        | 1/6 [00:01<00:04,  1.08it/s, loss=0.170674]Epoch 1/1:  33%|███▎      | 2/6 [00:01<00:03,  1.04it/s, loss=0.170674]2026-10-02 16:56:10,777 - [aiohttp.access] - 127.0.0.1 [02/Oct/2026:15:56:10 +0000] "GET /status HTTP/1.1" 200 280 "-" "python-requests/2.32.5"
-✓ Round 9 complete - Clients: 0/3, Strategy: fedavg
-Epoch 1/1:   0%|          | 0/6 [00:01<?, ?it/s, loss=0.237476]Epoch 1/1:  17%|█▋        | 1/6 [00:01<00:07,  1.52s/it, loss=0.237476]Epoch 1/1:  33%|███▎      | 2/6 [00:02<00:03,  1.20it/s, loss=0.127541]Epoch 1/1:  50%|█████     | 3/6 [00:02<00:02,  1.12it/s, loss=0.127541]Epoch 1/1:  33%|███▎      | 2/6 [00:02<00:03,  1.04it/s, loss=0.134994]Epoch 1/1:  50%|█████     | 3/6 [00:02<00:02,  1.01it/s, loss=0.134994]Epoch 1/1:  50%|█████     | 3/6 [00:03<00:02,  1.12it/s, loss=0.094108]Epoch 1/1:  67%|██████▋   | 4/6 [00:03<00:01,  1.08it/s, loss=0.094108]Epoch 1/1:  17%|█▋        | 1/6 [00:03<00:07,  1.52s/it, loss=0.187699]Epoch 1/1:  33%|███▎      | 2/6 [00:03<00:06,  1.51s/it, loss=0.187699]Epoch 1/1:  50%|█████     | 3/6 [00:03<00:02,  1.01it/s, loss=0.082904]Epoch 1/1:  67%|██████▋   | 4/6 [00:03<00:01,  1.00it/s, loss=0.082904]Epoch 1/1:  67%|██████▋   | 4/6 [00:04<00:01,  1.08it/s, loss=0.078132]Epoch 1/1:  83%|████████▎ | 5/6 [00:04<00:00,  1.08it/s, loss=0.078132]Epoch 1/1:  83%|████████▎ | 5/6 [00:04<00:00,  1.08it/s, loss=0.084059]Epoch 1/1: 100%|██████████| 6/6 [00:04<00:00,  1.44it/s, loss=0.084059]Epoch 1/1: 100%|██████████| 6/6 [00:04<00:00,  1.27it/s, loss=0.084059]
-INFO:__main__:  Epoch 1 - Avg Loss: 0.126483
-INFO:__main__:
-============================================================
-INFO:__main__:TRAINING COMPLETE
-INFO:__main__:============================================================
-INFO:__main__:Average Loss: 0.126483
-INFO:__main__:Total Batches: 6
-INFO:__main__:
-→ Submitting model update...
-INFO:__main__:  Average loss: 0.126483
-INFO:__main__:  Weight payload: 3,036,102 bytes
-Epoch 1/1:  33%|███▎      | 2/6 [00:04<00:06,  1.51s/it, loss=0.144826]Epoch 1/1:  50%|█████     | 3/6 [00:04<00:04,  1.50s/it, loss=0.144826]Epoch 1/1:  67%|██████▋   | 4/6 [00:05<00:01,  1.00it/s, loss=0.080224]Epoch 1/1:  83%|████████▎ | 5/6 [00:05<00:01,  1.04s/it, loss=0.080224]Epoch 1/1:  83%|████████▎ | 5/6 [00:05<00:01,  1.04s/it, loss=0.068300]Epoch 1/1: 100%|██████████| 6/6 [00:05<00:00,  1.28it/s, loss=0.068300]Epoch 1/1: 100%|██████████| 6/6 [00:05<00:00,  1.12it/s, loss=0.068300]
-INFO:__main__:  Epoch 1 - Avg Loss: 0.126704
-INFO:__main__:
-============================================================
-INFO:__main__:TRAINING COMPLETE
-INFO:__main__:============================================================
-INFO:__main__:Average Loss: 0.126704
-INFO:__main__:Total Batches: 6
-INFO:__main__:
-→ Submitting model update...
-INFO:__main__:  Average loss: 0.126704
-INFO:__main__:  Weight payload: 3,035,744 bytes
-2026-10-02 16:56:14,676 - [__main__] - Update from client_1: Loss=0.126483 (1/3)
-2026-10-02 16:56:14,677 - [aiohttp.access] - 127.0.0.1 [02/Oct/2026:15:56:13 +0000] "POST /submit_update HTTP/1.1" 200 210 "-" "Python/3.12 aiohttp/3.13.1"
-INFO:__main__:✓ Update submitted: waiting
-2026-10-02 16:56:14,840 - [aiohttp.access] - 127.0.0.1 [02/Oct/2026:15:56:14 +0000] "GET /status HTTP/1.1" 200 280 "-" "python-requests/2.32.5"
-Epoch 1/1:  50%|█████     | 3/6 [00:05<00:04,  1.50s/it, loss=0.097959]Epoch 1/1:  67%|██████▋   | 4/6 [00:05<00:02,  1.47s/it, loss=0.097959]INFO:__main__:
-============================================================
-INFO:__main__:✓ CLIENT_1 FINISHED - 10 ROUNDS
-INFO:__main__:============================================================
-
-2026-10-02 16:56:15,942 - [__main__] - Update from client_3: Loss=0.126704 (2/3)
-2026-10-02 16:56:15,943 - [aiohttp.access] - 127.0.0.1 [02/Oct/2026:15:56:14 +0000] "POST /submit_update HTTP/1.1" 200 210 "-" "Python/3.12 aiohttp/3.13.1"
-INFO:__main__:✓ Update submitted: waiting
-Epoch 1/1:  67%|██████▋   | 4/6 [00:07<00:02,  1.47s/it, loss=0.106363]Epoch 1/1:  83%|████████▎ | 5/6 [00:07<00:01,  1.40s/it, loss=0.106363]Epoch 1/1:  83%|████████▎ | 5/6 [00:07<00:01,  1.40s/it, loss=0.060883]Epoch 1/1: 100%|██████████| 6/6 [00:07<00:00,  1.01s/it, loss=0.060883]Epoch 1/1: 100%|██████████| 6/6 [00:07<00:00,  1.25s/it, loss=0.060883]
-INFO:__main__:  Epoch 1 - Avg Loss: 0.139201
-INFO:__main__:
-============================================================
-INFO:__main__:TRAINING COMPLETE
-INFO:__main__:============================================================
-INFO:__main__:Average Loss: 0.139201
-INFO:__main__:Total Batches: 6
-INFO:__main__:
-→ Submitting model update...
-INFO:__main__:  Average loss: 0.139201
-INFO:__main__:  Weight payload: 3,036,102 bytes
-INFO:__main__:
-============================================================
-INFO:__main__:✓ CLIENT_3 FINISHED - 10 ROUNDS
-INFO:__main__:============================================================
-
-2026-10-02 16:56:17,947 - [__main__] - Update from client_2: Loss=0.139201 (3/3)
-2026-10-02 16:56:18,878 - [aiohttp.access] - 127.0.0.1 [02/Oct/2026:15:56:18 +0000] "GET /status HTTP/1.1" 200 280 "-" "python-requests/2.32.5"
-2026-10-02 16:56:19,025 - [__main__] - ✓ Round 10 complete - Avg Loss: 0.130796, Clients: 3
-2026-10-02 16:56:19,029 - [__main__] - Checkpoint saved: sl_runs/attack_noise_x2/server_round_10.pt
-2026-10-02 16:56:19,030 - [aiohttp.access] - 127.0.0.1 [02/Oct/2026:15:56:16 +0000] "POST /submit_update HTTP/1.1" 200 196 "-" "Python/3.12 aiohttp/3.13.1"
-INFO:__main__:✓ Update submitted: aggregated
-INFO:__main__:
-============================================================
-INFO:__main__:✓ CLIENT_2 FINISHED - 10 ROUNDS
-INFO:__main__:============================================================
-
-2026-10-02 16:56:22,929 - [aiohttp.access] - 127.0.0.1 [02/Oct/2026:15:56:22 +0000] "GET /status HTTP/1.1" 200 281 "-" "python-requests/2.32.5"
-✓ Round 10 complete - Clients: 0/3, Strategy: fedavg
-
-
-Waiting for training to complete...
-✓ Client_1 completed
-✓ Client_2 completed
-✓ Client_3 completed
-
-📊 Generating loss plot...
-✓ Loss plot saved: plots\cae_training_loss.png
-
-======================================================================
-TRAINING COMPLETED!
-======================================================================
-
-📁 Saved Checkpoints (14):
-   sl_runs/attack_noise_x2/server_round_1.pt
-   sl_runs/attack_noise_x2/server_round_10.pt
-   sl_runs/attack_noise_x2/server_round_11.pt
-   sl_runs/attack_noise_x2/server_round_12.pt
-   sl_runs/attack_noise_x2/server_round_13.pt
-   ... and 9 more
-
-📈 Training Loss Plot:
-   plots/cae_training_loss.png
-
-✓ Training artifacts saved successfully!
-
-
-📊 Evaluating final model...
-  Using checkpoint: server_round_14.pt
-Loading model from sl_runs/attack_noise_x2\server_round_14.pt
-Model loaded on cpu
-Parameters: 757,011
-
-======================================================================
-COMPREHENSIVE CAE FL EVALUATION
-======================================================================
-
-======================================================================
-EVALUATION COMPLETE
-======================================================================
-Results saved to: evaluation_results/
-  - evaluation_report.json
-  - evaluation_report.txt
-  - cae_metrics_over_rounds.png
-  - cae_client_heterogeneity.png
-  - cae_drift_over_rounds.png
-
-
-
-Cleaning up processes...
-All processes terminated.

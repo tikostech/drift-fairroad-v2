@@ -3,10 +3,18 @@ Live demo of the SL gate. The same poisoning attack is trained twice, without an
 console shows each round and every gate decision as it happens, then the results and the gate's
 explanations open in the browser (sl_gate_demo.html, one self-contained file).
 
+The gate is IP and isn't in this repo: the server traces and gates through the SL and CBR services of
+drift-fairroad-service, which must be running (by default on 127.0.0.1:8601 and 127.0.0.1:8602; there:
+python -m ip_services.sl_service / cbr_service, or docker compose up). The page is rendered from the
+decisions the CBR service returned (demo_page.py). From fl-payload/:
+
     .venv-gpu/Scripts/python demo_sl_gate.py               # scaling attack by client_3, ~4 min on the GPU
     .venv-gpu/Scripts/python demo_sl_gate.py --pause       # wait for Enter between steps (when presenting)
     .venv-gpu/Scripts/python demo_sl_gate.py --reuse       # no training: rebuild the page from the last runs
     .venv-gpu/Scripts/python demo_sl_gate.py --attack sign_flip
+
+Service URLs: --sl / --cbr, else $SL_SERVICE_URL / $CBR_SERVICE_URL, else the 127.0.0.1 defaults. API key:
+--api-key, else $IP_SERVICE_API_KEY, else the services' default key.
 
 Talk track: DEMO.md.
 """
@@ -20,7 +28,10 @@ import sys
 import time
 import webbrowser
 
+import config
+
 HERE = os.path.dirname(os.path.abspath(__file__))
+DEFAULT_SL_URL, DEFAULT_CBR_URL = config.SL_SERVICE_URL, config.CBR_SERVICE_URL  # http://127.0.0.1:8601 / :8602
 STEPS = 4
 GATE = re.compile(r"SL gate (r\d+)/(\S+): (VALID|INVALID) \(score ([\d.]+)x threshold, coverage ([\d.]+)\)(.*)")
 ROUND = re.compile(r"Round (\d+) complete - Avg Loss: ([\d.]+)")
@@ -50,13 +61,16 @@ def port_in_use(port):
         return s.connect_ex(("127.0.0.1", port)) == 0
 
 
-def run_fl(run_dir, extra, rounds):
-    """Train one run, streaming a condensed view; the full output goes to <run_dir>.log."""
+def run_fl(run_dir, extra, rounds, args):
+    """Train one run in the FL project, streaming a condensed view; the full output goes to <run_dir>.log."""
+    run_dir = os.path.abspath(run_dir)
     if os.path.exists(run_dir):
         shutil.rmtree(run_dir)
-    cmd = [sys.executable, "-u", "run_fl_cae_system.py", "--num-rounds", str(rounds),
-           "--checkpoint-dir", run_dir, "--no-final-eval"] + extra
+    cmd = [sys.executable, "-u", os.path.join(HERE, "run_fl_cae_system.py"), "--num-rounds", str(rounds),
+           "--checkpoint-dir", run_dir, "--no-final-eval", "--sl-service-url", args.sl] + extra
     env = dict(os.environ, PYTHONIOENCODING="utf-8", PYTHONUNBUFFERED="1")
+    if args.api_key:
+        env["IP_SERVICE_API_KEY"] = args.api_key
     t0 = time.time()
     with open(run_dir + ".log", "w", encoding="utf-8") as log:
         p = subprocess.Popen(cmd, cwd=HERE, env=env, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
@@ -76,7 +90,12 @@ def run_fl(run_dir, extra, rounds):
             elif "Port" in line and "in use" in line or line.startswith("✗"):
                 say("   " + line.rstrip())
         p.wait()
-    say(f"   ... finished in {time.time() - t0:.0f} s (log: {os.path.relpath(run_dir + '.log', HERE)})")
+    log_path = run_dir + ".log"
+    try:
+        log_path = os.path.relpath(log_path, HERE)
+    except ValueError:  # --out on another drive (Windows): keep it absolute
+        pass
+    say(f"   ... finished in {time.time() - t0:.0f} s (log: {log_path})")
     if p.returncode != 0 or not os.path.exists(os.path.join(run_dir, f"server_round_{rounds}.pt")):
         raise SystemExit(f"Training failed: see {run_dir}.log")
 
@@ -86,8 +105,14 @@ def main():
     ap.add_argument("--attack", choices=["scale", "sign_flip", "noise", "inverted"], default="scale")
     ap.add_argument("--attack-scale", type=float, default=None, help="Attack strength (default: the client's)")
     ap.add_argument("--rounds", type=int, default=10, help="Federated rounds (the case base covers 1-10)")
-    ap.add_argument("--case-base", default="sl_runs_gpu/case_base_v2.npz", help="Case base of valid models (gate v6)")
-    ap.add_argument("--out", default="sl_runs_demo", help="Where the runs and the page go")
+    ap.add_argument("--case-base", default="case_base_v2", help="Case base on the CBR service (gate v6)")
+    ap.add_argument("--sl", default=os.environ.get("SL_SERVICE_URL") or DEFAULT_SL_URL,
+                    help=f"SL service URL (default: $SL_SERVICE_URL or {DEFAULT_SL_URL})")
+    ap.add_argument("--cbr", default=os.environ.get("CBR_SERVICE_URL") or DEFAULT_CBR_URL,
+                    help=f"CBR service URL (default: $CBR_SERVICE_URL or {DEFAULT_CBR_URL})")
+    ap.add_argument("--api-key", default=os.environ.get("IP_SERVICE_API_KEY"),
+                    help="IP services API key (default: $IP_SERVICE_API_KEY, else the services' default key)")
+    ap.add_argument("--out", default="demo_runs", help="Where the runs and the page go (not committed)")
     ap.add_argument("--reuse", action="store_true", help="Skip training; rebuild the page from existing runs")
     ap.add_argument("--pause", action="store_true", help="Wait for Enter between steps")
     ap.add_argument("--no-open", action="store_true", help="Do not open the browser")
@@ -98,16 +123,20 @@ def main():
     except AttributeError:
         pass
 
-    import config
     import torch
-    from sl_demo_page import _evaluator, build_page, page_data, reconstructions, round_quality
+    from demo_page import CBRServiceClient, _evaluator, build_page, page_data, reconstructions, round_quality
+    from ip_client import ServiceError
+    cbr = CBRServiceClient(args.cbr, api_key=args.api_key, retries=1)
 
     ungated, gated = os.path.join(args.out, "ungated"), os.path.join(args.out, "gated")
     attack = ["--attack", args.attack] + (["--attack-scale", str(args.attack_scale)] if args.attack_scale else [])
     device = torch.cuda.get_device_name(0) if torch.cuda.is_available() else "CPU (slower: torch has no CUDA here)"
     say(f"\nSL gate demo -- attack: {args.attack} by client_3, {args.rounds} rounds, device: {device}")
-    if not os.path.exists(args.case_base):
-        raise SystemExit(f"Case base not found: {args.case_base}")
+    try:  # needed for --reuse too: the page scores the checkpoints that weren't gated live through it
+        cbr.describe(args.case_base)
+    except ServiceError as e:
+        raise SystemExit(f"Case base {args.case_base!r} not available on the CBR service {args.cbr}: {e}. "
+                         "Start drift-fairroad-service's services, or pass --cbr / --sl.")
     if not args.reuse and port_in_use(config.SERVER_PORT):
         raise SystemExit(f"Port {config.SERVER_PORT} is in use: another FL run is active. Wait for it to finish.")
     os.makedirs(args.out, exist_ok=True)
@@ -122,14 +151,15 @@ def main():
                "3 clients train a denoising autoencoder; client_3 is poisoned and sends manipulated updates.",
                "The server averages every update it receives.")
         pause(args, "start training")
-        run_fl(ungated, ["--sl-traces"] + attack, args.rounds)
+        run_fl(ungated, ["--sl-traces"] + attack, args.rounds, args)
 
         banner(2, "The same attack WITH the SL gate",
                "Before averaging, the server traces each update on 32 probe images and compares the trace",
                "with valid models from the case base. Updates too far from every valid precedent are rejected.",
                "Legend:  x = rejected   ! = flagged but admitted   (blank) = accepted")
         pause(args, "start training")
-        run_fl(gated, ["--sl-case-base", args.case_base, "--sl-gate-scope", "clients"] + attack, args.rounds)
+        run_fl(gated, ["--sl-case-base", args.case_base, "--sl-gate-scope", "clients", "--cbr-service-url", args.cbr]
+               + attack, args.rounds, args)
 
     banner(3, "Measuring the models", "Reconstruction error (MSE) of every round's model on a fixed validation set.")
     pause(args)
@@ -141,7 +171,7 @@ def main():
         say(f"   {a['round']:>5}  {a['mse']:>12.4f}  {b['mse']:>9.4f}")
 
     banner(4, "Explaining the gate's decisions", "Opening the demo page.")
-    data = page_data(gated, ungated, quality, recon)
+    data = page_data(gated, ungated, quality, recon, cbr)
     page = build_page(data, os.path.join(args.out, "sl_gate_demo.html"))
     ups = [m for m in data["models"] if m["kind"] == "client_update"]
     bad = [m for m in ups if m["source"] == data["malicious"]]

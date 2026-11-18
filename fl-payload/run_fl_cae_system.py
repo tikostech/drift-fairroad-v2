@@ -50,7 +50,7 @@ class FLSystemRunner:
                              f"the server needs MIN_CLIENTS={config.MIN_CLIENTS} to start")
 
     def write_run_meta(self):
-        """Record what this run was (clean or attacked) next to its checkpoints, for eval_sl_gate.py."""
+        """Record what this run was (clean or attacked) next to its checkpoints, for the research tools in drift-fairroad-service."""
         os.makedirs(self.checkpoint_dir, exist_ok=True)
         meta = {
             "num_rounds": self.num_rounds, "num_clients": config.NUM_CLIENTS,
@@ -407,7 +407,7 @@ def main():
     parser.add_argument('--sl-traces', action='store_true',
                         help='Archive SL traces of every client update and checkpoint')
     parser.add_argument('--sl-case-base', default=None,
-                        help='SL case base (.npz) the server gates models against, or its name on --cbr-service-url')
+                        help='Name of the case base on --cbr-service-url the server gates models against')
     parser.add_argument('--sl-gate-mode', choices=['enforce', 'audit'], default='enforce')
     parser.add_argument('--sl-gate-scope', choices=['both', 'checkpoint', 'clients'], default='both')
     parser.add_argument('--sl-max-rejections', type=int, default=None,
@@ -425,11 +425,18 @@ def main():
                         help='Skip the evaluation of the last checkpoint after training (saves ~40 s per run)')
     parser.add_argument('--absent-client', action='append', default=[], metavar='CLIENT_ID',
                         help='Do not start this client (valid client dropout); repeatable')
-    parser.add_argument('--sl-service-url', default=None,
-                        help='Server traces through the SL web service at this URL (drift-fairroad-service)')
-    parser.add_argument('--cbr-service-url', default=None,
-                        help='Server gates through the CBR web service; --sl-case-base is then a case base name there')
+    parser.add_argument('--sl-service-url', default=os.environ.get('SL_SERVICE_URL') or config.SL_SERVICE_URL,
+                        help=f'SL web service the server traces through (drift-fairroad-service), used with '
+                             f'--sl-traces / --sl-case-base (default: $SL_SERVICE_URL or {config.SL_SERVICE_URL})')
+    parser.add_argument('--cbr-service-url', default=os.environ.get('CBR_SERVICE_URL') or config.CBR_SERVICE_URL,
+                        help=f'CBR web service holding the case bases, used with --sl-case-base '
+                             f'(default: $CBR_SERVICE_URL or {config.CBR_SERVICE_URL})')
     args = parser.parse_args()
+    # The SL probe and gate are not in this repo: tracing and gating go through the IP services.
+    if (args.sl_traces or args.sl_case_base) and not args.sl_service_url:
+        parser.error('--sl-traces / --sl-case-base need --sl-service-url (drift-fairroad-service)')
+    if args.sl_case_base and not args.cbr_service_url:
+        parser.error('--sl-case-base needs --cbr-service-url (drift-fairroad-service)')
 
     # Setup signal handler
     signal.signal(signal.SIGINT, signal_handler)

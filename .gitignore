@@ -1,3 +1,9 @@
 .claude/
 .idea/
 .venv/
+# Python bytecode (compiled IP modules were once committed here)
+__pycache__/
+*.py[cod]
+
+# SL gate demo runs (traces, gate logs, checkpoints, page): local output, not committed
+fl-payload/demo_runs/

@@ -1,4 +1,5 @@
-# Overlay: the CAE FL system gated through the IP services, built from the sibling service repo.
+# Overlay: the CAE FL system gated through the IP services (two images, Dockerfile.sl and
+# Dockerfile.cbr), built from the sibling service repo.
 #   docker compose -f docker/docker-compose.cae.yml -f docker/docker-compose.cae-ip.yml up --build
 # The server image (Dockerfile.cae) carries no IP: it reaches the services through ip_client/.
 # Defaults reproduce the v6 production gate: case_base_v2 + --sl-gate-scope clients.
@@ -6,29 +7,31 @@
 # sl_traces.npz and sl_gate_log.jsonl land in the server's checkpoints volume (fl-payload/checkpoints).
 
 x-ip-env: &ip-env
-  IP_SERVICE_API_KEY: ${IP_SERVICE_API_KEY:-change-me}
-  IP_SERVICE_ADMIN_KEY: ${IP_SERVICE_ADMIN_KEY:-change-me-admin}
+  IP_SERVICE_API_KEY: ${IP_SERVICE_API_KEY:-}
+  IP_SERVICE_ADMIN_KEY: ${IP_SERVICE_ADMIN_KEY:-}
 
 services:
   sl-service:
-    build: ${IP_SERVICE_REPO:-../../drift-fairroad-service}
-    image: drift-fairroad/ip-services:latest
+    build:
+      context: ${IP_SERVICE_REPO:-../../drift-fairroad-service}
+      dockerfile: Dockerfile.sl
+    image: drift-fairroad/sl-service:latest
     container_name: sl-service
     environment:
       <<: *ip-env
-      IP_SERVICE: sl
     ports:
       - "8601:8601"
     networks:
       - fl-cae-network
 
   cbr-service:
-    build: ${IP_SERVICE_REPO:-../../drift-fairroad-service}
-    image: drift-fairroad/ip-services:latest
+    build:
+      context: ${IP_SERVICE_REPO:-../../drift-fairroad-service}
+      dockerfile: Dockerfile.cbr
+    image: drift-fairroad/cbr-service:latest
     container_name: cbr-service
     environment:
       <<: *ip-env
-      IP_SERVICE: cbr
     ports:
       - "8602:8602"
     volumes:
@@ -38,7 +41,7 @@ services:
 
   fl-server-cae:
     environment:
-      IP_SERVICE_API_KEY: ${IP_SERVICE_API_KEY:-change-me}
+      IP_SERVICE_API_KEY: ${IP_SERVICE_API_KEY:-}  # empty: ip_client's default key
       FL_SERVER_EXTRA_ARGS: >-
         --sl-case-base ${IP_CASE_BASE:-case_base_v2} --sl-gate-scope ${IP_GATE_SCOPE:-clients}
         --sl-service-url http://sl-service:8601 --cbr-service-url http://cbr-service:8602
