@@ -1,0 +1,5 @@
+# Vendored from drift-fairroad-service (ip_client/) -- byte-identical copy. Do not edit here: change it in
+# the service repo, copy it over, and update the hash below. integration_tests/check_no_ip.py checks it.
+# The client holds no IP: it serialises weights/traces and calls the SL and CBR services over HTTP.
+# 2026-11-18  source: drift-fairroad-service (not yet committed)
+48b1337719b19022e62716b190920ad9687e6d4c8dd6916ad791b133af2fcffd  __init__.py

@@ -4,7 +4,7 @@ Federated Learning system for **time series** (GPS/IMU), **classification** (e.g
 
 **Convention: run all commands from the project root directory** (the folder that contains `fl-time-series/`, `fl-payload/`, `data/`, and `docker/`). Paths in examples are relative to project root.
 
-**Requirements:** Python **3.10** (used in Docker and recommended for local runs).
+**Requirements:** Python **3.10+**. The CAE and IP-service Docker images use 3.12: current CPU PyTorch wheels no longer install on the 3.10 image.
 
 ---
 
@@ -61,11 +61,22 @@ drift-fairroad/
 │   ├── EVALUATE_FL_SYSTEM.md
 │   └── README.md
 │
+├── ip_client/                 # HTTP client for the IP services (no IP; vendored from drift-fairroad-service)
+├── integration_tests/         # FL ↔ IP services: check_integration, check_fail_open, check_no_ip
+│
 └── docker/
     ├── Dockerfile, Dockerfile.cae
-    ├── docker-compose.yml, docker-compose.cae.yml
+    ├── docker-compose.yml, docker-compose.cae.yml, docker-compose.cae-ip.yml
     └── DOCKER.md
 ```
+
+**Core IP is managed separately.** The SL probe and minimisation, the CBR gate and case-base builder,
+and the `sc` package (SynapsesLogger, SequentialCollection) live in the **`drift-fairroad-service`**
+repo, checked out next to this one, and run as two web services. This repo holds no IP:
+
+- The FL server reaches the services through `ip_client/` (`--sl-service-url` / `--cbr-service-url`).
+- fl-payload's research tools find the sibling checkout through `fl-payload/ip_core.py`.
+- `python -m integration_tests.check_no_ip` makes sure no IP gets back in.
 ---
 
 

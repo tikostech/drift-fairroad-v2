@@ -46,8 +46,19 @@ This starts:
 - **`docker/docker-compose.yml`** - Compose file for timeseries system
 
 ### CAE System
-- **`docker/Dockerfile.cae`** - Base image for CAE FL
+- **`docker/Dockerfile.cae`** - Base image for CAE FL (carries no IP: the server reaches the probe and gate through `ip_client/`; the build fails if an IP definition gets in)
 - **`docker/docker-compose.cae.yml`** - Compose file for CAE system
+
+### IP services (SL minimise/probe + CBR gate)
+The IP services are a separate repo, `drift-fairroad-service`, checked out next to this one. It has its
+own `Dockerfile` and `docker-compose.yml`.
+- **`docker/docker-compose.cae-ip.yml`** - Overlay that adds `sl-service` (:8601) and `cbr-service` (:8602), built from the service repo (`IP_SERVICE_REPO`, default `../drift-fairroad-service`), and gates the CAE FL server through them (`case_base_v2`, scope `clients` = the v6 gate). Case bases are mounted from the service repo's `case_bases/` (`IP_CASE_BASE_DIR`).
+
+```bash
+docker compose -f docker/docker-compose.cae.yml -f docker/docker-compose.cae-ip.yml up --build
+```
+
+Set `IP_SERVICE_API_KEY` / `IP_SERVICE_ADMIN_KEY` (the compose defaults are placeholders). See the service repo's README.
 
 Build context for both is the **project root** (`context: ..`). A **`.dockerignore`** at the project root keeps the context small (excludes `.git`, `__pycache__`, checkpoints, plots, `data/`, etc.). Dockerfiles use **CPU-only PyTorch** and **multi-stage builds** to reduce image size and disk use.
 
