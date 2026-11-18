@@ -208,6 +208,7 @@ Human-readable summary with all key metrics.
 - `--checkpoint-dir DIR` - Where the server writes checkpoints, traces and the gate log (default: `checkpoints`)
 - `--sl-traces` - Archive SL traces of every client update and checkpoint
 - `--sl-case-base PATH` - Gate models against this case base; `--sl-gate-mode enforce|audit`, `--sl-gate-scope both|checkpoint|clients`
+- `--sl-service-url URL`, `--cbr-service-url URL` - Trace and/or gate through the IP web services instead of in-process; with `--cbr-service-url`, `--sl-case-base` is a case base name on that service (see the drift-fairroad-service repo)
 - `--attack sign_flip|scale|noise|inverted` - Make `--malicious-client` (default `client_3`) poison its updates; `--attack-scale X`
 - `--absent-client CLIENT_ID` - Do not start this client (valid client dropout, e.g. for the case base); repeatable
 - `--no-final-eval` - Skip evaluating the last checkpoint after training (~40 s per run; use for batch experiments)
@@ -217,11 +218,14 @@ Human-readable summary with all key metrics.
 ## SL Gate (spoofed checkpoint detection)
 
 The server can trace every model it receives and gate it against a case base of valid models
-(`sl_gate.py`, adapted from tikos.profiler.cyber.training's one-class CBR pieces).
+(`sl_gate.py`, adapted from tikos.profiler.cyber.training's one-class CBR pieces). The probe, gate and SL
+minimisation are the project's core IP and live in the separate **drift-fairroad-service** repo. The tools
+here reach them in-process through `ip_core.py`, which needs the service repo checked out next to this one
+(or `DRIFT_FAIRROAD_IP_CORE`), or through the web services.
 
 1. **Trace.** Each client update and each averaged checkpoint is loaded into a scratch CAE and run
-   over `SL_PROBE_IMAGES` fixed probe images. `sl_probe_cae.py` turns each image's activations into
-   98 SL-minimised features (`sc/slmin/sl_minimize.py`). One probe image's trace is one case.
+   over `SL_PROBE_IMAGES` fixed probe images. `core/sl_probe_cae.py` turns each image's activations into
+   98 SL-minimised features (`core/sc/slmin/sl_minimize.py`). One probe image's trace is one case.
 2. **Case base.** Built from valid runs only: clean runs plus client-dropout runs (one client absent),
    because when the gate excludes a client the global model becomes an average over fewer clients.
    A model at training progress r (accepted checkpoints + 1, which equals the round number unless
@@ -260,6 +264,16 @@ python compare_live_gates.py
 
 The case base records the feature schema and the probe set's hash; the server refuses to start
 with a case base that doesn't match.
+
+**As web services.** drift-fairroad-service runs the probe and the case base as two HTTP services (SL
+service for tracing, CBR service for case bases and decisions). The server reaches them through
+`ip_client/` (no IP) with `--sl-service-url` / `--cbr-service-url`. Decisions and the trace archive are
+the same as in-process. `../integration_tests/check_integration.py` runs a gated training through them
+and checks the outcome.
+
+```bash
+python run_fl_cae_system.py --sl-case-base case_base_v2 --sl-gate-scope clients --sl-service-url http://localhost:8601 --cbr-service-url http://localhost:8602
+```
 
 ---
 

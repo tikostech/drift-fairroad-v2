@@ -30,7 +30,7 @@ class FLSystemRunner:
 
     def __init__(self, num_rounds=10, checkpoint_dir=None, sl_traces=False, sl_case_base=None,
                  sl_gate_mode="enforce", sl_gate_scope="both", sl_policy=None, malicious_client=None,
-                 attack=None, attack_scale=None, absent_clients=None, final_eval=True):
+                 attack=None, attack_scale=None, absent_clients=None, final_eval=True, ip_services=None):
         self.num_rounds = num_rounds
         self.processes = []
         self.server_url = f"http://{config.SERVER_HOST}:{config.SERVER_PORT}"
@@ -43,6 +43,8 @@ class FLSystemRunner:
         # Clients that never start: a valid run with client dropout (e.g. for the SL case base).
         self.absent_clients = list(absent_clients or [])
         self.final_eval = final_eval
+        # Optional IP web services the server traces/gates through: {"sl_service_url", "cbr_service_url"}
+        self.ip_services = {k: v for k, v in (ip_services or {}).items() if v}
         if len(self.absent_clients) > config.NUM_CLIENTS - config.MIN_CLIENTS:
             raise ValueError(f"At most {config.NUM_CLIENTS - config.MIN_CLIENTS} absent client(s): "
                              f"the server needs MIN_CLIENTS={config.MIN_CLIENTS} to start")
@@ -58,6 +60,7 @@ class FLSystemRunner:
             "sl_case_base": self.sl_case_base, "sl_gate_mode": self.sl_gate_mode if self.sl_case_base else None,
             "sl_gate_scope": self.sl_gate_scope if self.sl_case_base else None,
             "sl_policy": self.sl_policy if self.sl_case_base else None,
+            "ip_services": self.ip_services or None,
             "started": time.strftime("%Y-%m-%dT%H:%M:%S"),
         }
         with open(os.path.join(self.checkpoint_dir, "run_meta.json"), "w") as f:
@@ -89,7 +92,8 @@ class FLSystemRunner:
             ] + (['--sl-traces'] if self.sl_traces else [])
               + (['--sl-case-base', self.sl_case_base, '--sl-gate-mode', self.sl_gate_mode,
                   '--sl-gate-scope', self.sl_gate_scope] if self.sl_case_base else [])
-              + [a for k, v in self.sl_policy.items() for a in (f"--sl-{k.replace('_', '-')}", str(v))],
+              + [a for k, v in self.sl_policy.items() for a in (f"--sl-{k.replace('_', '-')}", str(v))]
+              + [a for k, v in self.ip_services.items() for a in (f"--{k.replace('_', '-')}", v)],
             stdout=None,
             stderr=None,
             cwd=os.path.dirname(os.path.abspath(__file__)),
@@ -403,7 +407,7 @@ def main():
     parser.add_argument('--sl-traces', action='store_true',
                         help='Archive SL traces of every client update and checkpoint')
     parser.add_argument('--sl-case-base', default=None,
-                        help='SL case base (.npz) the server gates models against')
+                        help='SL case base (.npz) the server gates models against, or its name on --cbr-service-url')
     parser.add_argument('--sl-gate-mode', choices=['enforce', 'audit'], default='enforce')
     parser.add_argument('--sl-gate-scope', choices=['both', 'checkpoint', 'clients'], default='both')
     parser.add_argument('--sl-max-rejections', type=int, default=None,
@@ -421,6 +425,10 @@ def main():
                         help='Skip the evaluation of the last checkpoint after training (saves ~40 s per run)')
     parser.add_argument('--absent-client', action='append', default=[], metavar='CLIENT_ID',
                         help='Do not start this client (valid client dropout); repeatable')
+    parser.add_argument('--sl-service-url', default=None,
+                        help='Server traces through the SL web service at this URL (drift-fairroad-service)')
+    parser.add_argument('--cbr-service-url', default=None,
+                        help='Server gates through the CBR web service; --sl-case-base is then a case base name there')
     args = parser.parse_args()
 
     # Setup signal handler
@@ -441,6 +449,7 @@ def main():
         attack_scale=args.attack_scale,
         absent_clients=args.absent_client,
         final_eval=not args.no_final_eval,
+        ip_services=dict(sl_service_url=args.sl_service_url, cbr_service_url=args.cbr_service_url),
     )
     runner.run()
 

@@ -121,7 +121,7 @@ CHECKPOINT_DIR = 'checkpoints'
 PLOT_DIR = 'plots'
 
 # ============================================================================
-# SL GATE (fl_server.py --sl-traces / --sl-case-base, see sl_gate.py)
+# SL GATE (fl_server.py --sl-traces / --sl-case-base, the gate itself is in drift-fairroad-service)
 # ============================================================================
 
 # Probe images the server traces every model on, spread evenly over NOISY_IMAGE_DIR.

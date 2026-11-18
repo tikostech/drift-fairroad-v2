@@ -5,8 +5,8 @@ Coordinates training and aggregates model updates.
 Pickle serialize/deserialize runs in a thread executor so the event loop
 stays responsive for /status and other requests (avoids monitor timeouts).
 
-SL gate (optional, see sl_gate.py): each client update and each averaged checkpoint is traced
-over a fixed probe set. With --sl-traces the traces are archived; with --sl-case-base they are
+SL gate (optional; the gate itself is IP and lives in the drift-fairroad-service repo): each client
+update and each averaged checkpoint is traced over a fixed probe set. With --sl-traces the traces are archived; with --sl-case-base they are
 also compared against a case base of valid models. In enforce mode an invalid client update is
 left out of the average, and an invalid checkpoint is saved as server_round_N.rejected.pt while
 the previous global model is kept (and saved as server_round_N.pt).
@@ -18,6 +18,12 @@ everything then freezes training. The first --sl-checkpoint-warmup round(s) of c
 traced but not gated: a round-1 average of independently initialised networks is erratic. After
 --sl-checkpoint-stall-guard consecutive rejected checkpoints the next one is admitted, for the same
 reason as the budget: repeated rejection without progress is drift, and would stall training.
+
+The SL tracing and the case base run as web services (drift-fairroad-service, reached through
+ip_client/, which holds no IP): --sl-service-url traces through the SL service, --cbr-service-url
+gates against a case base held by the CBR service (--sl-case-base is then its name there). Without
+them they run in-process, which needs the service repo's IP core checked out (see ip_core.py). If a service call fails mid-run, the model is admitted
+ungated and the error is logged and recorded (fail-open): a gate outage must not stall training.
 """
 import asyncio
 import json
@@ -28,6 +34,7 @@ from aiohttp import web
 import logging
 import importlib
 import os
+import sys
 from concurrent.futures import ThreadPoolExecutor
 import matplotlib
 matplotlib.use('Agg')  # Non-interactive backend
@@ -64,6 +71,9 @@ class FLServer:
         sl_max_rejections: int = None,
         sl_checkpoint_warmup: int = 1,
         sl_checkpoint_stall_guard: int = 1,
+        sl_service_url: str = None,
+        cbr_service_url: str = None,
+        ip_api_key: str = None,
     ):
         """Initialize FL Server.
 
@@ -76,6 +86,9 @@ class FLServer:
         sl_checkpoint_stall_guard: after N consecutive rejected checkpoints the next one is admitted
             (logged). Repeated rejection at the same training progress is drift, not a fresh attack,
             and rejecting on would stall training. A negative value disables the guard.
+        sl_service_url: trace through the SL web service instead of in-process.
+        cbr_service_url: gate through the CBR web service; ``sl_case_base`` is then a case base name there.
+        ip_api_key: API key for both services (default: $IP_SERVICE_API_KEY).
         """
         self.host = host
         self.port = port
@@ -121,6 +134,7 @@ class FLServer:
         self.checkpoint_warmup = sl_checkpoint_warmup
         self.checkpoint_stall_guard = sl_checkpoint_stall_guard
         self.ckpt_rejected_in_a_row = 0
+        self.sl_service_url, self.cbr_service_url, self.ip_api_key = sl_service_url, cbr_service_url, ip_api_key
         self._init_sl_gate(model_class, sl_traces, sl_case_base, sl_gate_mode, sl_gate_scope)
 
         logger.info(f"Server initialized with {aggregation_strategy} aggregation")
@@ -135,26 +149,55 @@ class FLServer:
         # too, freezing training.
         self.generation = 0
         self.pending = {}  # client_id -> traced update awaiting the round's decision (rejection budget)
+        self._service_down = ()  # ip_client.ServiceError when a service is used: caught, fail-open
         if not (sl_traces or sl_case_base):
             return
-        from sl_gate import ModelTracer, SLCaseBase, TraceStore, load_probe_images
+        from trace_store import TraceStore
+        if self.sl_service_url or self.cbr_service_url:
+            # ip_client sits at the repo root locally and next to this file in the server image.
+            root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            if root not in sys.path:
+                sys.path.append(root)
+            from ip_client import ServiceError
+            self._service_down = ServiceError  # unreachable, 5xx, or a rejected call (e.g. case base removed)
 
-        batch, files, probe_hash = load_probe_images(
-            config.NOISY_IMAGE_DIR, config.SL_PROBE_IMAGES, config.AUTOENCODER_IMAGE_SIZE)
-        # Scratch network: traced models are loaded into it, never into the global model.
-        self.tracer = ModelTracer(model_class(**config.MODEL_CONFIG).model, batch, probe_hash)
+        if self.sl_service_url:
+            from ip_client import RemoteModelTracer, SLServiceClient
+            sl = SLServiceClient(self.sl_service_url, api_key=self.ip_api_key)
+            sl.wait_ready(timeout=120)
+            self.tracer = RemoteModelTracer(sl)
+            files, probe_hash = self.tracer.probe_files, self.tracer.probe_hash
+            where = f"SL service {self.sl_service_url}"
+        else:
+            import ip_core  # noqa: F401  (in-process gate: needs the IP core, see ip_core.py)
+            from sl_gate import ModelTracer, load_probe_images
+            batch, files, probe_hash = load_probe_images(
+                config.NOISY_IMAGE_DIR, config.SL_PROBE_IMAGES, config.AUTOENCODER_IMAGE_SIZE)
+            # Scratch network: traced models are loaded into it, never into the global model.
+            self.tracer = ModelTracer(model_class(**config.MODEL_CONFIG).model, batch, probe_hash)
+            where = config.NOISY_IMAGE_DIR
         os.makedirs(self.checkpoint_dir, exist_ok=True)
         self.trace_store = TraceStore(os.path.join(self.checkpoint_dir, "sl_traces.npz"), files, probe_hash)
         self.gate_log_path = os.path.join(self.checkpoint_dir, "sl_gate_log.jsonl")
         open(self.gate_log_path, "w").close()  # one log per run, like sl_traces.npz
-        logger.info(f"SL tracing on: {len(files)} probe images from {config.NOISY_IMAGE_DIR}")
+        logger.info(f"SL tracing on: {len(files)} probe images ({where})")
 
         if sl_case_base:
-            self.case_base = SLCaseBase.load(sl_case_base)
+            if self.cbr_service_url:
+                from ip_client import CBRServiceClient, RemoteCaseBase
+                cbr = CBRServiceClient(self.cbr_service_url, api_key=self.ip_api_key)
+                cbr.wait_ready(timeout=120)
+                self.case_base = RemoteCaseBase(cbr, sl_case_base)
+                source = f"'{sl_case_base}' on CBR service {self.cbr_service_url}"
+            else:
+                import ip_core  # noqa: F401
+                from sl_gate import SLCaseBase
+                self.case_base = SLCaseBase.load(sl_case_base)
+                source = sl_case_base
             # Trace once now so a schema or probe-set mismatch fails at startup, not mid-training.
             self.tracer.trace(self.model.get_weights())
             self.case_base.check_compatible(self.tracer.names, probe_hash)
-            logger.info(f"SL gate on ({mode}, scope={scope}): {sl_case_base} "
+            logger.info(f"SL gate on ({mode}, scope={scope}): {source} "
                         f"({self.case_base.meta['n_models']} valid models); at most {self.max_rejections} "
                         f"update(s) rejected per round; checkpoint warm-up {self.checkpoint_warmup} round(s)")
 
@@ -164,18 +207,27 @@ class FLServer:
         Runs in the executor (CPU-bound forward pass + statistics).
         """
         t0 = time.time()
-        Z = self.tracer.trace(weights)
         is_global = source == "global"
         compare_round = self.generation + 1
         in_scope = self.case_base is not None and (
             self.gate_scope == "both" or self.gate_scope == ("checkpoint" if is_global else "clients"))
-        decision = self.case_base.decide(Z, compare_round) if in_scope else None
+        Z = decision = error = None
+        try:
+            Z = self.tracer.trace(weights)
+            decision = self.case_base.decide(Z, compare_round) if in_scope else None
+        except self._service_down as e:
+            # Fail-open: a failing gate service must not stall training. Recorded, and logged loudly.
+            error = f"IP service error, model admitted ungated: {e}"
+            logger.error(f"SL gate r{round_num}/{source}: {error}")
         record = {"model": f"r{round_num}/{source}", "round": round_num, "compare_round": compare_round,
-                  "source": source, "included": included, "gated": in_scope, "accepted": True, "note": None,
+                  "source": source, "included": included, "gated": in_scope and error is None,
+                  "accepted": True, "note": None,
                   "verdict": decision["verdict"] if decision else None,
                   "score_ratio": decision["score_ratio"] if decision else None,
                   "coverage": decision["coverage"] if decision else None,
                   "trace_seconds": round(time.time() - t0, 3)}
+        if error:
+            record["error"] = error
         return dict(Z=Z, record=record, decision=decision,
                     invalid=decision is not None and decision["verdict"] == "invalid")
 
@@ -183,7 +235,8 @@ class FLServer:
         """Archive and log a traced model with its final decision."""
         record, decision = traced["record"], traced["decision"]
         record["accepted"], record["note"] = accepted, note
-        self.trace_store.add(traced["Z"], self.tracer.names, record)
+        if traced["Z"] is not None:  # None when tracing through the SL service failed
+            self.trace_store.add(traced["Z"], self.tracer.names, record)
         with open(self.gate_log_path, "a") as f:
             f.write(json.dumps(dict(record, decision=decision)) + "\n")
         if decision:
@@ -547,7 +600,9 @@ def main():
     parser.add_argument("--aggregation", default="fedavg")
     parser.add_argument("--checkpoint-dir", default=None, help=f"Checkpoint directory (default: {config.CHECKPOINT_DIR})")
     parser.add_argument("--sl-traces", action="store_true", help="Archive SL traces of every client update and checkpoint")
-    parser.add_argument("--sl-case-base", default=None, help="SL case base (.npz) to gate models against; implies --sl-traces")
+    parser.add_argument("--sl-case-base", default=None,
+                        help="SL case base (.npz) to gate models against, or its name on --cbr-service-url; "
+                             "implies --sl-traces")
     parser.add_argument("--sl-gate-mode", choices=["enforce", "audit"], default="enforce",
                         help="enforce: drop invalid updates / roll back invalid checkpoints; audit: record only")
     parser.add_argument("--sl-gate-scope", choices=["both", "checkpoint", "clients"], default="both",
@@ -558,6 +613,12 @@ def main():
                         help="Checkpoints of the first N rounds are traced but not gated (default: 1)")
     parser.add_argument("--sl-checkpoint-stall-guard", type=int, default=1,
                         help="Admit the next checkpoint after N consecutive rejections (default: 1; -1 disables)")
+    parser.add_argument("--sl-service-url", default=os.environ.get("SL_SERVICE_URL"),
+                        help="Trace through the SL web service at this URL instead of in-process ($SL_SERVICE_URL)")
+    parser.add_argument("--cbr-service-url", default=os.environ.get("CBR_SERVICE_URL"),
+                        help="Gate through the CBR web service at this URL ($CBR_SERVICE_URL); "
+                             "--sl-case-base then names a case base held by that service")
+    parser.add_argument("--ip-api-key", default=None, help="API key for the IP services (default: $IP_SERVICE_API_KEY)")
     args = parser.parse_args()
 
     server = FLServer(
@@ -574,6 +635,9 @@ def main():
         sl_max_rejections=args.sl_max_rejections,
         sl_checkpoint_warmup=args.sl_checkpoint_warmup,
         sl_checkpoint_stall_guard=args.sl_checkpoint_stall_guard,
+        sl_service_url=args.sl_service_url,
+        cbr_service_url=args.cbr_service_url,
+        ip_api_key=args.ip_api_key,
     )
 
     server.run()

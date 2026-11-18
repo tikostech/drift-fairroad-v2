@@ -21,7 +21,7 @@ Evaluation dimensions (aligned with root evaluate_fl_system.py):
 
 Outputs: evaluation_report.json, evaluation_report.txt, and plots (metrics over rounds,
 client heterogeneity, drift). With --sl-features, also sl_features.npz: SynapsesLogger-minimised
-activation features per image (see sl_probe_cae.py), keyed by round and dataset.
+activation features per image (see drift-fairroad-service: sl_probe_cae.py), keyed by round and dataset.
 """
 from __future__ import annotations
 
@@ -44,7 +44,6 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
 from data_preprocessing_cae import CAEDataPreprocessor
-from sl_probe_cae import CAESLProbe
 import config
 
 
@@ -116,7 +115,11 @@ class CAEEvaluator:
         self._param_count: Optional[int] = None
 
         # load() replaces weights in place, so hooks on self.model.model stay valid across checkpoints.
-        self.sl_probe = CAESLProbe(self.model.model, scope=sl_scope, bands=sl_bands) if sl_features else None
+        self.sl_probe = None
+        if sl_features:  # imported only when asked for: the SL probe is IP and may be absent (FL image)
+            import ip_core  # noqa: F401  (puts the IP core from drift-fairroad-service on sys.path)
+            from sl_probe_cae import CAESLProbe
+            self.sl_probe = CAESLProbe(self.model.model, scope=sl_scope, bands=sl_bands)
         self.sl_results: Dict[str, np.ndarray] = {}  # "round_<r>_<dataset>" -> (n_images, n_features)
         self.sl_names: List[str] = []
 

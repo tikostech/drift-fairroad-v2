@@ -21,7 +21,9 @@ import os
 
 import numpy as np
 
-from sl_gate import SLCaseBase, load_run
+import ip_core  # noqa: F401  (puts the IP core from drift-fairroad-service on sys.path)
+from sl_gate import SLCaseBase
+from trace_store import load_run
 
 SURFACE, INK, INK2, GRID = "#fcfcfb", "#0b0b0b", "#52514e", "#e6e5e1"
 BAND = "#d9d8d4"

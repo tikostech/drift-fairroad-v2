@@ -1,8 +1,0 @@
-# Vendored from tikos.api.profiler.service.cyber.v3 (util/) -- byte-identical copies.
-# Do not edit here, re-vendor instead. CAE-specific code lives in fl-payload/sl_probe_cae.py.
-# Only sl_minimize.minimize() and activation_probe._layer_stats are used; the SLMinProbe /
-# SLMinBatchProbe classes are LM-specific (nn.Linear, model.layers.N names) and their lazy
-# `from util.activation_probe import ...` would not resolve in this repo.
-# 2026-10-02  source commit: 4d4b354 (files clean)
-ae51c78118dd2ae48c16efe09bf25e38ed467d3c8075a9035cde273587bad02d  activation_probe.py
-658d05eb38b860fee0bdc425ca19f0c5190d8d994fc008ac8c0af5de740a593d  sl_minimize.py

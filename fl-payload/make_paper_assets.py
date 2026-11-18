@@ -37,7 +37,9 @@ from collections import defaultdict
 import numpy as np
 
 import config
-from sl_gate import SLCaseBase, load_run
+import ip_core  # noqa: F401  (puts the IP core from drift-fairroad-service on sys.path)
+from sl_gate import SLCaseBase
+from trace_store import load_run
 
 RUNS_DIR = "sl_runs"                                   # --runs-dir
 CASE_BASE = os.path.join(RUNS_DIR, "case_base_v2.npz")  # --case-base

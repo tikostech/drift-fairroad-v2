@@ -14,7 +14,9 @@ import os
 
 import numpy as np
 
-from sl_gate import SLCaseBase, load_run
+import ip_core  # noqa: F401  (puts the IP core from drift-fairroad-service on sys.path)
+from sl_gate import SLCaseBase
+from trace_store import load_run
 
 
 def roc_auc(score, positive):
